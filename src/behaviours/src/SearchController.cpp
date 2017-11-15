@@ -23,30 +23,36 @@ void SearchController::Reset() {
 /**
  * This code implements a basic random walk search.
  */
-Result SearchController::DoWork() {
+Result SearchController::DoWork()
+{
 
-  if (!result.wpts.waypoints.empty()) {
-    if (hypot(result.wpts.waypoints[0].x-currentLocation.x, result.wpts.waypoints[0].y-currentLocation.y) < 0.15) {
+  if (!result.wpts.waypoints.empty())
+  {
+    if (hypot(result.wpts.waypoints[0].x-currentLocation.x, result.wpts.waypoints[0].y-currentLocation.y) < 0.15)
+    {
       attemptCount = 0;
     }
   }
 
-  if (attemptCount > 0 && attemptCount < 5) {
+  if (attemptCount > 0 && attemptCount < 5)
+  {
     attemptCount++;
-    if (succesfullPickup) {
+    if (succesfullPickup)
+    {
       succesfullPickup = false;
       attemptCount = 1;
     }
+
     return result;
   }
-  else if (attemptCount >= 5 || attemptCount == 0) 
+  else if (attemptCount >= 5 || attemptCount == 0)
   {
     attemptCount = 1;
 
 
     result.type = waypoint;
     Point  searchLocation;
-
+/*
     //select new position 50 cm from current location
     if (first_waypoint)
     {
@@ -65,24 +71,34 @@ Result SearchController::DoWork() {
 
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
-    
+*/
+
+    cout << "I AM CHOOSING A LOCATION TO DRIVE TO!" << endl;
+
+    searchLocation.x = 0;
+    searchLocation.y = 0;
+    searchLocation.theta = currentLocation.theta;
+
+    result.wpts.waypoints.clear();
+    result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
+
     return result;
   }
 
 }
 
 void SearchController::SetCenterLocation(Point centerLocation) {
-  
+
   float diffX = this->centerLocation.x - centerLocation.x;
   float diffY = this->centerLocation.y - centerLocation.y;
   this->centerLocation = centerLocation;
-  
+
   if (!result.wpts.waypoints.empty())
   {
   result.wpts.waypoints.back().x -= diffX;
   result.wpts.waypoints.back().y -= diffY;
   }
-  
+
 }
 
 void SearchController::SetCurrentLocation(Point currentLocation) {
