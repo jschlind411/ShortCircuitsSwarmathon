@@ -26,6 +26,8 @@ public:
   void setTargetHeldClear();
   bool getShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
 
+  bool getObstacleDetected();
+
 protected:
 
   void ProcessData();

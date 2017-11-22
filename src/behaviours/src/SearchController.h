@@ -27,6 +27,9 @@ public:
   void SetCenterLocation(Point centerLocation);
   void SetSuccesfullPickup();
 
+  //ShortCircuits changes
+  void SetInterrupted();
+
 protected:
 
   void ProcessData();
@@ -45,6 +48,17 @@ private:
   // Flag to allow special behaviour for the first waypoint
   bool first_waypoint = true;
   bool succesfullPickup = false;
+
+  //ShortCircuits changes
+  bool hasSearchPoint;
+  bool wasInterrupted;
+  bool hasStartedPattern;
+  int positionInSearch;
+
+  float ChooseRandomTheta(float roverAngle);  //Chooses Random Theta
+  Point ChooseRandomPoint();  //Creates a random point to search around
+  Point GenDeliberatePoint();
+
 };
 
 #endif /* SEARCH_CONTROLLER */

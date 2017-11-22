@@ -300,7 +300,11 @@ void behaviourStateMachine(const ros::TimerEvent&)
     }
     
   }
+/*
+  double absCurrentAngle = angles::normalize_angle_positive(currentLocation.theta);
 
+  cout << "Current Theta:  " << absCurrentAngle << endl;
+*/
   // Robot is in automode
   if (currentMode == 2 || currentMode == 3)
   {
@@ -451,9 +455,11 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
   
 }
 
-void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
+void modeHandler(const std_msgs::UInt8::ConstPtr& message)
+{
   currentMode = message->data;
-  if(currentMode == 2 || currentMode == 3) {
+  if(currentMode == 2 || currentMode == 3)
+  {
     logicController.SetModeAuto();
   }
   else {
@@ -462,13 +468,15 @@ void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
   sendDriveCommand(0.0, 0.0);
 }
 
-void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight) {
+void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight)
+{
   
   logicController.SetSonarData(sonarLeft->range, sonarCenter->range, sonarRight->range);
   
 }
 
-void odometryHandler(const nav_msgs::Odometry::ConstPtr& message) {
+void odometryHandler(const nav_msgs::Odometry::ConstPtr& message)
+{
   //Get (x,y) location directly from pose
   currentLocation.x = message->pose.pose.position.x;
   currentLocation.y = message->pose.pose.position.y;
@@ -539,7 +547,8 @@ void virtualFenceHandler(const std_msgs::Float32MultiArray& message)
   }
 }
 
-void mapHandler(const nav_msgs::Odometry::ConstPtr& message) {
+void mapHandler(const nav_msgs::Odometry::ConstPtr& message)
+{
   //Get (x,y) location directly from pose
   currentLocationMap.x = message->pose.pose.position.x;
   currentLocationMap.y = message->pose.pose.position.y;
@@ -562,7 +571,8 @@ void mapHandler(const nav_msgs::Odometry::ConstPtr& message) {
   logicController.SetMapVelocityData(linearVelocity, angularVelocity);
 }
 
-void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
+void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message)
+{
   const int max_motor_cmd = 255;
   if (currentMode == 0 || currentMode == 1) {
     float linear  = abs(message->axes[4]) >= 0.1 ? message->axes[4]*max_motor_cmd : 0.0;

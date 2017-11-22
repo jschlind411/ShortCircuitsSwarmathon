@@ -32,7 +32,8 @@ void ObstacleController::avoidObstacle() {
 
 // A collection zone was seen in front of the rover and we are not carrying a target
 // so avoid running over the collection zone and possibly pushing cubes out.
-void ObstacleController::avoidCollectionZone() {
+void ObstacleController::avoidCollectionZone()
+{
   
     result.type = precisionDriving;
 
@@ -40,9 +41,12 @@ void ObstacleController::avoidCollectionZone() {
 
     // Decide which side of the rover sees the most april tags and turn away
     // from that side
-    if(count_left_collection_zone_tags < count_right_collection_zone_tags) {
+    if(count_left_collection_zone_tags < count_right_collection_zone_tags)
+    {
       result.pd.cmdAngular = K_angular;
-    } else {
+    }
+    else
+    {
       result.pd.cmdAngular = -K_angular;
     }
 
@@ -52,7 +56,8 @@ void ObstacleController::avoidCollectionZone() {
 }
 
 
-Result ObstacleController::DoWork() {
+Result ObstacleController::DoWork()
+{
 
   clearWaypoints = true;
   set_waypoint = true;
@@ -254,4 +259,9 @@ void ObstacleController::setTargetHeldClear()
     previousTargetState = false;
     ignore_center_sonar = false;
   }
+}
+
+bool ObstacleController::getObstacleDetected()
+{
+  return obstacleDetected;
 }

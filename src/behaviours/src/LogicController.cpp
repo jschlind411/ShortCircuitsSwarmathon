@@ -269,6 +269,13 @@ void LogicController::controllerInterconnect()
       obstacleController.setTargetHeld();
       searchController.SetSuccesfullPickup();
     }
+
+    //If we have seen an obstacle
+    if(obstacleController.getObstacleDetected())
+    {
+      cout << "Saw Obstacle, telling searchController" << endl;
+      searchController.SetInterrupted();
+    }
   }
 
   //ask if drop off has released the target from the claws yet
