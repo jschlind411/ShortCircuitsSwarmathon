@@ -265,3 +265,8 @@ bool ObstacleController::getObstacleDetected()
 {
   return obstacleDetected;
 }
+
+bool ObstacleController::getCollectionZoneSeen()
+{
+  return collection_zone_seen;
+}

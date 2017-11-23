@@ -274,7 +274,7 @@ void LogicController::controllerInterconnect()
     if(obstacleController.getObstacleDetected())
     {
       cout << "Saw Obstacle, telling searchController" << endl;
-      searchController.SetInterrupted();
+      searchController.SetInterrupted(obstacleController.getCollectionZoneSeen());
     }
   }
 

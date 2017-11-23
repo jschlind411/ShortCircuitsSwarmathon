@@ -28,7 +28,7 @@ public:
   void SetSuccesfullPickup();
 
   //ShortCircuits changes
-  void SetInterrupted();
+  void SetInterrupted(bool centerSeen);
 
 protected:
 
@@ -58,6 +58,8 @@ private:
   float ChooseRandomTheta(float roverAngle);  //Chooses Random Theta
   Point ChooseRandomPoint();  //Creates a random point to search around
   Point GenDeliberatePoint();
+
+  Point Turn180();
 
 };
 

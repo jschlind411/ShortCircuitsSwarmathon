@@ -44,17 +44,18 @@ Result SearchController::DoWork()
     }
   }
 
-  result.type = waypoint;
+  //searchLocation declaration in .h
 
-  /*
-    //select new position 50 cm from current location
-    if (first_waypoint)
-    {
-      first_waypoint = false;
-      searchLocation.theta = currentLocation.theta + M_PI;
-      searchLocation.x = currentLocation.x + (0.5 * cos(searchLocation.theta));
-      searchLocation.y = currentLocation.y + (0.5 * sin(searchLocation.theta));
-    }
+  result.type = waypoint;
+  Point destination;
+
+  //select new position 50 cm from current location
+  if (first_waypoint)
+  {
+    first_waypoint = false;
+    Turn180();
+  }
+/*
     else
     {
       //select new heading from Gaussian distribution around current heading
@@ -66,28 +67,27 @@ Result SearchController::DoWork()
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
 */
-
-  //searchLocation declaration in .h
-  Point destination;
-
-  if(!hasSearchPoint)  //if we have finished/don't currently have a new search area make one
+  else if(!hasSearchPoint)  //if we have finished/don't currently have/need a new search area make one
   {
     cout << "Doesn't have search area, generating one" << endl;
     searchLocation = ChooseRandomPoint();
     destination = searchLocation;
     hasSearchPoint = true;
   }
-  else if (wasInterrupted)  //if we are not within a specific distance of the searchLocation go there
+  else if (wasInterrupted)  //if search was interrupted, try going back to the actual searchLocation point
   {
     cout << "Was Interrupted, going back to searchLocation" << endl;
     destination = searchLocation;
     wasInterrupted = false;
   }
-  else //otherwise search around this area
+  else //otherwise search around the area
   {
     cout << "Has Search Area, performing search pattern" << endl;
     destination = GenDeliberatePoint();
   }
+
+  //find appropriate theta using robots current position and the position recently generated
+  destination.theta = atan2((destination.y - currentLocation.y), (destination.x - currentLocation.x));
 
   result.wpts.waypoints.clear();
   result.wpts.waypoints.insert(result.wpts.waypoints.begin(), destination);
@@ -135,18 +135,32 @@ void SearchController::SetSuccesfullPickup()
   succesfullPickup = true;
 }
 
-void SearchController::SetInterrupted()
+void SearchController::SetInterrupted(bool centerSeen)
 {
   //if we have gone anywhere in our search pattern.  This can be called multiple times, so check to see if was
   // interupted hasn't been set yet, if yes don't keep subtracting from the search position.
-  if(positionInSearch > 0 && !wasInterrupted)
+  if(!wasInterrupted)
   {
-    //go back 1 step in the pattern
-    positionInSearch--;
-  }
+    //if we saw an obstacle, and it wasn't the center, go back one point
+    if(positionInSearch > 0 && !centerSeen)
+    {
+      cout << "Resetting Search Position!" << endl;
 
-  //tells searchController that it was interrupted
-  wasInterrupted = true;
+      //go back 1 step in the pattern
+      positionInSearch--;
+    }
+
+    //if it was a center tag that was the obstacle, and haven't started searching the point, generate a new one
+    else if(centerSeen && !hasStartedPattern)
+    {
+      cout << "Generating New Search Position" << endl;
+      //generate new point, might be trying to go through center
+      hasSearchPoint = false;
+    }
+
+    //tells searchController that it was interrupted
+    wasInterrupted = true;
+  }
 }
 
 float SearchController::ChooseRandomTheta(float roverAngle)
@@ -165,9 +179,9 @@ float SearchController::ChooseRandomTheta(float roverAngle)
 
 Point SearchController::ChooseRandomPoint()
 {
-  //ARENA IS 12x12
-  const int MAX_ARENA_SIZE = 12;
-  const int MIN_SEARCH_DIST = 0.5;
+  //ARENA IS 50x50
+  const int MAX_ARENA_SIZE = 7;
+  const int MIN_SEARCH_DIST = 1;
 
   float searchDist = rng->uniformReal(MIN_SEARCH_DIST, MAX_ARENA_SIZE);
 
@@ -175,10 +189,11 @@ Point SearchController::ChooseRandomPoint()
 
   Point temp;
 
-  temp.theta = ChooseRandomTheta(currentLocation.theta);
+  //theta is the angle at which to plot the new point
+  float theta = ChooseRandomTheta(currentLocation.theta);
 
-  temp.x = centerLocation.x + (searchDist * cos(temp.theta));
-  temp.y = centerLocation.y + (searchDist * sin(temp.theta));
+  temp.x = centerLocation.x + (searchDist * cos(theta));
+  temp.y = centerLocation.y + (searchDist * sin(theta));
 
   return temp;
 }
@@ -195,6 +210,9 @@ Point SearchController::GenDeliberatePoint()
   switch(positionInSearch)
   {
   case 0:
+
+    hasStartedPattern = true;
+
     //POINT 1
 
     //generate x and y based on searchPosition
@@ -239,7 +257,7 @@ Point SearchController::GenDeliberatePoint()
     positionInSearch++;  //increment
     break;
   case 4:
-    //POINT 4
+    //POINT 5
 
     //generate x and y based on searchPosition
 
@@ -263,9 +281,27 @@ Point SearchController::GenDeliberatePoint()
     break;
   }
 
-  //find appropriate theta using robots current position and the position recently generated
-  temp.theta = atan2((temp.y - currentLocation.y), (temp.x - currentLocation.x));
+  /*
+    CASES:
 
+  1       0 & 4
+  -----------
+  |         |
+  |    x    |
+  |         |
+  -----------
+  2         3
 
+*/
+  return temp;
+}
+
+Point SearchController::Turn180()
+{
+  Point temp;
+
+  float theta = currentLocation.theta + M_PI;
+  temp.x = currentLocation.x + (0.5 * cos(theta));
+  temp.y = currentLocation.y + (0.5 * sin(theta));
   return temp;
 }
