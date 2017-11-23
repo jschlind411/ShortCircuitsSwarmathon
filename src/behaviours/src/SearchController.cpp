@@ -254,6 +254,7 @@ Point SearchController::GenDeliberatePoint()
     temp.x = centerLocation.x;
     temp.y = centerLocation.y;
     positionInSearch = 0;
+    hasSearchPoint = false;
     break;
   default:
     //shouldn't get here...
@@ -262,6 +263,7 @@ Point SearchController::GenDeliberatePoint()
     break;
   }
 
+  //find appropriate theta using robots current position and the position recently generated
   temp.theta = atan2((temp.y - currentLocation.y), (temp.x - currentLocation.x));
 
 
