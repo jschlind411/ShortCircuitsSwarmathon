@@ -207,7 +207,8 @@ Point SearchController::GenDeliberatePoint()
 {
   Point temp;
 
-  int patternSize = 1;
+
+  int patternSize = 0.9;
 
   cout << "GOING TO POINT " << positionInSearch << endl;
 
@@ -227,12 +228,13 @@ Point SearchController::GenDeliberatePoint()
   {
   	hasStartedPattern = true;
 
+
+    //if a value below 1 then this implementation does not work currently
   	float ang_deg = 45 * positionInSearch;
   	float ang_rad = M_PI/180 * ang_deg;
 
   	temp.x = searchLocation.x + patternSize * cos(ang_rad);
   	temp.y = searchLocation.y + patternSize * sin(ang_rad);
-
   }
   positionInSearch++;
 
