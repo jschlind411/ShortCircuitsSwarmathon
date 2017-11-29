@@ -204,7 +204,7 @@ Point SearchController::GenDeliberatePoint()
   cout << "GOING TO POINT " << positionInSearch << endl;
 
   //Octagon ninth point will set it next location to the centerLocation.
-  if(positionInSearch == 9)
+  if(positionInSearch > 8 || positionInSearch < 0)
   {
   	temp.x = centerLocation.x;
     temp.y = centerLocation.y;
@@ -219,6 +219,7 @@ Point SearchController::GenDeliberatePoint()
   {
   	hasStartedPattern = true;
 
+    positionInSearch++;
 
     //if a value below 1 then this implementation does not work currently
   	float ang_deg = 45 * positionInSearch;
@@ -227,7 +228,6 @@ Point SearchController::GenDeliberatePoint()
   	temp.x = searchLocation.x + patternSize * cos(ang_rad);
   	temp.y = searchLocation.y + patternSize * sin(ang_rad);
   }
-  positionInSearch++;
 
   //Start Square Pattern
   // switch(positionInSearch)
