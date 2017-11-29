@@ -53,7 +53,7 @@ Result SearchController::DoWork()
   if (first_waypoint)
   {
     first_waypoint = false;
-    Turn180();
+    destination = Turn180();
   }
 /*
     else
