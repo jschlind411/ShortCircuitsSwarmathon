@@ -54,20 +54,15 @@ Result SearchController::DoWork()
   {
     first_waypoint = false;
     destination = Turn180();
-  }
-/*
-    else
-    {
-      //select new heading from Gaussian distribution around current heading
-      searchLocation.theta = rng->gaussian(currentLocation.theta, 0.785398); //45 degrees in radians
-      searchLocation.x = currentLocation.x + (0.5 * cos(searchLocation.theta));
-      searchLocation.y = currentLocation.y + (0.5 * sin(searchLocation.theta));
-    }
 
     result.wpts.waypoints.clear();
-    result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
-*/
-  else if(!hasSearchPoint)  //if we have finished/don't currently have/need a new search area make one
+    result.wpts.waypoints.insert(result.wpts.waypoints.begin(), destination);
+
+    return result;
+  }
+
+
+  if(!hasSearchPoint)  //if we have finished/don't currently have/need a new search area make one
   {
     cout << "Doesn't have search area, generating one" << endl;
     searchLocation = ChooseRandomPoint();
@@ -85,9 +80,6 @@ Result SearchController::DoWork()
     cout << "Has Search Area, performing search pattern" << endl;
     destination = GenDeliberatePoint();
   }
-
-  //find appropriate theta using robots current position and the position recently generated
-  destination.theta = atan2((destination.y - currentLocation.y), (destination.x - currentLocation.x));
 
   result.wpts.waypoints.clear();
   result.wpts.waypoints.insert(result.wpts.waypoints.begin(), destination);
@@ -190,10 +182,10 @@ Point SearchController::ChooseRandomPoint()
   Point temp;
 
   //theta is the angle at which to plot the new point
-  float theta = ChooseRandomTheta(currentLocation.theta);
+  temp.theta = ChooseRandomTheta(currentLocation.theta);
 
-  temp.x = centerLocation.x + (searchDist * cos(theta));
-  temp.y = centerLocation.y + (searchDist * sin(theta));
+  temp.x = centerLocation.x + (searchDist * cos(temp.theta));
+  temp.y = centerLocation.y + (searchDist * sin(temp.theta));
 
   return temp;
 }
@@ -202,7 +194,7 @@ Point SearchController::GenDeliberatePoint()
 {
   Point temp;
 
-  int patternSize = 1;
+  float patternSize = 0.5;
 
   cout << "GOING TO POINT " << positionInSearch << endl;
 
@@ -280,6 +272,13 @@ Point SearchController::GenDeliberatePoint()
     temp.y = currentLocation.y;
     break;
   }
+
+  //find appropriate theta using robots current position and the position recently generated
+  temp.theta = atan2((temp.y - currentLocation.y), (temp.x - currentLocation.x));
+
+  float dist = hypot((temp.y - currentLocation.y), (temp.x - currentLocation.x));
+
+  cout << "CALCULATED DISTANCE IN SEARCH:  " << dist << endl;
 
   /*
     CASES:
