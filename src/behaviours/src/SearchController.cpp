@@ -190,6 +190,11 @@ Point SearchController::ChooseRandomPoint()
   return temp;
 }
 
+ /**
+  * Generates various search patterns for testing
+  * currently experiment with octagons.
+  **/
+
 Point SearchController::GenDeliberatePoint()
 {
   Point temp;
@@ -198,80 +203,178 @@ Point SearchController::GenDeliberatePoint()
 
   cout << "GOING TO POINT " << positionInSearch << endl;
 
-  //Start Square Pattern
-  switch(positionInSearch)
+  //Octagon ninth point will set it next location to the centerLocation.
+  if(positionInSearch == 9)
   {
-  case 0:
-
-    hasStartedPattern = true;
-
-    //POINT 1
-
-    //generate x and y based on searchPosition
-
-    //First Quadrant Point
-    temp.x = searchLocation.x + (patternSize);
-    temp.y = searchLocation.y + (patternSize);
-
-    positionInSearch++;  //increment
-    break;
-  case 1:
-    //POINT 2
-
-    //generate x and y based on searchPosition
-
-    //Second Quadrant Point
-    temp.x = searchLocation.x - (patternSize);
-    temp.y = searchLocation.y + (patternSize);
-
-    positionInSearch++;  //increment
-    break;
-  case 2:
-    //POINT 3
-
-    //generate x and y based on searchPosition
-
-    //Third Quadrant Point
-    temp.x = searchLocation.x - (patternSize);
-    temp.y = searchLocation.y - (patternSize);
-
-    positionInSearch++;  //increment
-    break;
-  case 3:
-    //POINT 4
-
-    //generate x and y based on searchPosition
-
-    //Fourth Quadrant Point
-    temp.x = searchLocation.x + (patternSize);
-    temp.y = searchLocation.y - (patternSize);
-
-    positionInSearch++;  //increment
-    break;
-  case 4:
-    //POINT 5
-
-    //generate x and y based on searchPosition
-
-    //First Quadrant Point AGAIN
-    temp.x = searchLocation.x + (patternSize);
-    temp.y = searchLocation.y + (patternSize);
-
-    positionInSearch++;  //increment
-    break;
-  case 5:
-    //GO HOME
-    temp.x = centerLocation.x;
+  	temp.x = centerLocation.x;
     temp.y = centerLocation.y;
     positionInSearch = 0;
     hasSearchPoint = false;
-    break;
-  default:
-    //shouldn't get here...
-    temp.x = currentLocation.x;
-    temp.y = currentLocation.y;
-    break;
   }
+
+  //calculates the next x,y location from the searchLocation
+  //angles are 45 degrees apart form one another. 
+  //source for math logic: https://www.redblobgames.com/grids/hexagons/
+  else
+  {
+  	hasStartedPattern = true;
+
+
+    //if a value below 1 then this implementation does not work currently
+  	float ang_deg = 45 * positionInSearch;
+  	float ang_rad = M_PI/180 * ang_deg;
+
+  	temp.x = searchLocation.x + patternSize * cos(ang_rad);
+  	temp.y = searchLocation.y + patternSize * sin(ang_rad);
+  }
+  positionInSearch++;
+
+  //Start Square Pattern
+  // switch(positionInSearch)
+  // {
+  // case 0:
+
+  //   hasStartedPattern = true;
+
+  //   //POINT 1
+
+  //   //generate x and y based on searchPosition
+
+  //   //First Quadrant Point
+  //   temp.x = searchLocation.x + (patternSize);
+  //   temp.y = searchLocation.y + (patternSize);
+
+  //   positionInSearch++;  //increment
+  //   break;
+  // case 1:switch(positionInSearch)
+  // {
+  // case 0:
+
+  //   hasStartedPattern = true;
+
+  //   //POINT 1
+
+  //   //generate x and y based on searchPosition
+
+  //   //First Quadrant Point
+  //   temp.x = searchLocation.x + (patternSize);
+  //   temp.y = searchLocation.y + (patternSize);
+
+  //   positionInSearch++;  //increment
+  //   break;
+  // case 1:
+  //   //POINT 2
+
+  //   //generate x and y based on searchPosition
+
+  //   //Second Quadrant Point
+  //   temp.x = searchLocation.x - (patternSize);
+  //   temp.y = searchLocation.y + (patternSize);
+
+  //   positionInSearch++;  //increment
+  //   break;
+  // case 2:
+  //   //POINT 3
+
+  //   //generate x and y based on searchPosition
+
+  //   //Third Quadrant Point
+  //   temp.x = searchLocation.x - (patternSize);
+  //   temp.y = searchLocation.y - (patternSize);
+
+  //   positionInSearch++;  //increment
+  //   break;
+  // case 3:
+  //   //POINT 4
+
+  //   //generate x and y based on searchPosition
+
+  //   //Fourth Quadrant Point
+  //   temp.x = searchLocation.x + (patternSize);
+  //   temp.y = searchLocation.y - (patternSize);
+
+  //   positionInSearch++;  //increment
+  //   break;
+  // case 4:
+  //   //POINT 5
+
+  //   //generate x and y based on searchPosition
+
+  //   //First Quadrant Point AGAIN
+  //   temp.x = searchLocation.x + (patternSize);
+  //   temp.y = searchLocation.y + (patternSize);
+
+  //   positionInSearch++;  //increment
+  //   break;
+  // case 5:
+  //   //GO HOME
+  //   temp.x = centerLocation.x;
+  //   temp.y = centerLocation.y;
+  //   positionInSearch = 0;
+  //   hasSearchPoint = false;
+  //   break;
+  // default:
+  //   //shouldn't get here...
+  //   temp.x = currentLocation.x;
+  //   temp.y = currentLocation.y;
+  //   break;
+  // }
+  //   //POINT 2
+
+  //   //generate x and y based on searchPosition
+
+  //   //Second Quadrant Point
+  //   temp.x = searchLocation.x - (patternSize);
+  //   temp.y = searchLocation.y + (patternSize);
+
+  //   positionInSearch++;  //increment
+  //   break;
+  // case 2:
+  //   //POINT 3
+
+  //   //generate x and y based on searchPosition
+
+  //   //Third Quadrant Point
+  //   temp.x = searchLocation.x - (patternSize);
+  //   temp.y = searchLocation.y - (patternSize);
+
+  //   positionInSearch++;  //increment
+  //   break;
+  // case 3:
+  //   //POINT 4
+
+  //   //generate x and y based on searchPosition
+
+  //   //Fourth Quadrant Point
+  //   temp.x = searchLocation.x + (patternSize);
+  //   temp.y = searchLocation.y - (patternSize);
+
+  //   positionInSearch++;  //increment
+  //   break;
+  // case 4:
+  //   //POINT 5
+
+  //   //generate x and y based on searchPosition
+
+  //   //First Quadrant Point AGAIN
+  //   temp.x = searchLocation.x + (patternSize);
+  //   temp.y = searchLocation.y + (patternSize);
+
+  //   positionInSearch++;  //increment
+  //   break;
+  // case 5:
+  //   //GO HOME
+  //   temp.x = centerLocation.x;
+  //   temp.y = centerLocation.y;
+  //   positionInSearch = 0;
+  //   hasSearchPoint = false;
+  //   break;
+  // default:
+  //   //shouldn't get here...
+  //   temp.x = currentLocation.x;
+  //   temp.y = currentLocation.y;
+  //   break;
+  // }
 
   //find appropriate theta using robots current position and the position recently generated
   temp.theta = atan2((temp.y - currentLocation.y), (temp.x - currentLocation.x));
