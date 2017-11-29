@@ -18,11 +18,19 @@ void ObstacleController::Reset() {
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
   
+  // Figure out which way is probably is best to turn
+  float bestSide = std::max({right,center,left}, [](const float& s1, const float& s2) {
+                                 return s1 < s2;
+                             });
+
+  cout<< "bestSide: " << bestSide << endl;
+  
     //obstacle on right side
     if (right < 0.8 || center < 0.8 || left < 0.8) {
-      result.type = precisionDriving;
+      cout << "right: " << right << "\tcenter: " << center << "\tleft: " << left << endl;
+      // result.type = precisionDriving;
 
-      result.pd.cmdAngular = -K_angular;
+      // result.pd.cmdAngular = -K_angular;
 
       result.pd.setPointVel = 0.0;
       result.pd.cmdVel = 0.0;
@@ -49,7 +57,7 @@ void ObstacleController::avoidCollectionZone()
     {
       result.pd.cmdAngular = -K_angular;
     }
-
+    
     result.pd.setPointVel = 0.0;
     result.pd.cmdVel = 0.0;
     result.pd.setPointYaw = 0;

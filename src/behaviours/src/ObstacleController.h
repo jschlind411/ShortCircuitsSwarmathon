@@ -55,7 +55,6 @@ private:
      * Member variables
      */
 
-
   bool obstacleInterrupt;
   bool obstacleDetected;
   bool obstacleAvoided;
@@ -87,6 +86,10 @@ private:
   bool can_set_waypoint = false;
 
   float camera_offset_correction = 0.020; //meters;
+
+
+  // ==== George Vars ====
+  bool evalNextStep = false;
 };
 
 #endif // OBSTACLECONTOLLER_H
