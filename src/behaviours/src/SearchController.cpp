@@ -317,7 +317,7 @@ Point SearchController::InterruptedLogic()
     if(!returning)
     {
       cout << "Interrupted by seeing center, assuming driving through center.  Forcing a new Search Point to be Generated" << endl;
-      temp = currentLocation;        //don't go anywhere
+      temp = ChooseRandomPoint();        //create new point
     }
     //Rover is trying to go back to the center location
     else
