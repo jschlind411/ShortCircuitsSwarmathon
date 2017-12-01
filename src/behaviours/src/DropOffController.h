@@ -33,11 +33,18 @@ public:
 
 private:
   // Begin George Values
-  bool ReadyToDrop();
   bool IsAtNest();
+  bool TimeToDrop();
+  bool isCentered();
+  bool ReadyToDrop();
+  bool AmILost();
   void DropAndLeave();
   void CenterRobot();
+  void SearchForNest();
+  void GoToNest();
 
+  bool atNest;
+  bool maxDropOffTime = 10;
   const float K_angular = 1.0; //radians a second
 
   // End George Values
