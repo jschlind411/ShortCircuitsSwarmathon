@@ -50,16 +50,19 @@ private:
   bool succesfullPickup = false;
 
   //ShortCircuits changes
-  bool hasSearchPoint;
-  bool wasInterrupted;
-  bool hasStartedPattern;
-  int positionInSearch;
+  bool hasSearchPoint;    //tells searchcontroller if it currently has generated a valid search point to travel too
+  bool wasInterrupted;    //tells searchcontroller if obstaclecontroller has interrupted search from doing its work previously
+  bool hasStartedPattern; //tells searchcontroller if it has started performing an octagon or not
+  bool returning;         //tells searchcontroller if it is currently in the process of returning home
+  int positionInSearch;   //keeps track of current position inside the fixed octagon position
+  int numTimesExceeded;   //Holds the number of times searchcontroller has attempted to go to a point and exceeded its trial attempts.
 
   float ChooseRandomTheta(float roverAngle);  //Chooses Random Theta
-  Point ChooseRandomPoint();  //Creates a random point to search around
-  Point GenDeliberatePoint();
+  Point ChooseRandomPoint();                  //Creates a random point to search around
+  Point GenDeliberatePoint();                 //Creates a point on the octagonal shaped fixed search pattern
+  Point InterruptedLogic();                   //Handles ALL logic for if the search controller was interrupted by obstacle
 
-  Point Turn180();
+  Point Turn180();                            //Turns rover around 180 degrees
 
 };
 
