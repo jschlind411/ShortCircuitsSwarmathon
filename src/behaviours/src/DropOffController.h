@@ -32,6 +32,16 @@ public:
   void SetCurrentTimeInMilliSecs( long int time );
 
 private:
+  // Begin George Values
+  bool ReadyToDrop();
+  bool IsAtNest();
+  void DropAndLeave();
+  void CenterRobot();
+
+  const float K_angular = 1.0; //radians a second
+
+  // End George Values
+
 
   void ProcessData();
 
