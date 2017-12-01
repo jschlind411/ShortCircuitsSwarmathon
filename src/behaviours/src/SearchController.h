@@ -4,6 +4,7 @@
 #include <random_numbers/random_numbers.h>
 #include "Controller.h"
 
+using namespace std;
 /**
  * This class implements the search control algorithm for the rovers. The code
  * here should be modified and enhanced to improve search performance.
@@ -55,10 +56,15 @@ private:
   bool hasStartedPattern;
   int positionInSearch;
 
+  //Flag for which x-axis or y-axis boarder line restriction
+  bool useX = false;
+  bool useY = false;
+
   float ChooseRandomTheta(float roverAngle);  //Chooses Random Theta
   Point ChooseRandomPoint();  //Creates a random point to search around
   Point GenDeliberatePoint();
-
+  void  SetBoarderValues(float initTheta); //Set up boarder values.
+  bool  IsWithinBoundary(Point currentPoint);
   Point Turn180();
 
 };

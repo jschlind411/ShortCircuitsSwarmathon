@@ -53,6 +53,12 @@ Result SearchController::DoWork()
   if (first_waypoint)
   {
     first_waypoint = false;
+
+    float initTheta = angles::normalize_angle_positive(currentLocation.theta);
+    cout << "(" << currentLocation.x << "," << currentLocation.y << ")" << endl;
+    cout << "CALLING SetBoarderValues initTheta" << initTheta << endl;
+    SetBoarderValues(initTheta);
+
     destination = Turn180();
 
     result.wpts.waypoints.clear();
@@ -65,7 +71,10 @@ Result SearchController::DoWork()
   if(!hasSearchPoint)  //if we have finished/don't currently have/need a new search area make one
   {
     cout << "Doesn't have search area, generating one" << endl;
-    searchLocation = ChooseRandomPoint();
+    do{
+    	searchLocation = ChooseRandomPoint();
+    }while(!IsWithinBoundary(searchLocation));
+   
     destination = searchLocation;
     hasSearchPoint = true;
   }
@@ -406,4 +415,100 @@ Point SearchController::Turn180()
   temp.x = currentLocation.x + (0.5 * cos(theta));
   temp.y = currentLocation.y + (0.5 * sin(theta));
   return temp;
+}
+
+void SearchController::SetBoarderValues(float initTheta)
+{
+
+	/* Rover position on odom map
+             	   (Pi/2) 
+		  			 N
+		  			 ^
+			(-,+)	 |     (+,+)
+	   			 	 R2
+	    (pi) E< R1 __center__R3 >W (0)
+	     	         |
+			(-, -)         (+,-)
+					 S
+	*/
+
+	//Rover 1: initial theta range (pi/4, 7pi/4)
+	//if range is satisfied sets useY boundary value to true
+	cout << "range (" << M_PI/4 << "," << 7*M_PI/4  << ")"<< endl;
+	if(initTheta > 0 && initTheta < M_PI/4 || initTheta > 7*M_PI/4  && initTheta < 2*M_PI)
+	{
+		useX = false;
+		useY = true;
+		cout << "range (pi/4, 7pi/5)" << endl;
+	}
+
+	//Rover 2: initial theta range (5pi/4, 7pi/4)
+	//if range is satisfied sets useX boundary value to true
+	cout << "range (" << 5*M_PI/4 << "," << 7*M_PI/4 << ")" << endl;
+	if(initTheta > 5*M_PI/4 && initTheta < 3*M_PI/2 || initTheta > 3*M_PI/2 && initTheta < 7*M_PI/4)
+	{
+		useX = true;
+		useY = false;
+		cout << "range (5pi/4, 7pi/4)" << endl;
+	}
+
+	//Rover 3: initial theta range (3pi/4 , 5pi/4)
+	//if range is satisfied sets useX and useY value to true
+	cout << "range (" << 3*M_PI/4 << "," << 5*M_PI/4 << ")" << endl;
+	if(initTheta > 3*M_PI/4 && initTheta < M_PI || initTheta > M_PI && initTheta < 5*M_PI/4)
+	{
+		useX = true;
+		useY = true;
+		cout << "range (3pi/4 , 5pi/4)" << endl;
+	}
+}
+
+bool SearchController::IsWithinBoundary(Point searchPoint)
+{
+	Point centerPoint;
+
+	cout << "CHECKING IsWithinBoundary" << endl;
+
+	//Rover 1 case:
+	if(useY)
+	{
+		cout << "case 2 Y = -1" << endl;
+		centerPoint.y = centerLocation.y - 1;
+		cout << " centerPointY: " << centerPoint.y << "searchPointY:" << searchPoint.y << endl;
+		if(searchPoint.y < centerPoint.y)
+		{
+			cout << "Not in bound" << endl;
+			return false;
+		}
+	}
+
+	//Rover 2 case: 
+	if(useX)
+	{
+		cout << "case 1 X = 1" << endl;
+		centerPoint.x = centerLocation.x + 1;
+		cout << " centerPointX: " << centerPoint.x << "searchPointX:" << searchPoint.x << endl;
+		if(searchPoint.x > centerPoint.x)
+		{
+			cout << "Not in bound" << endl;
+			return false;
+		}
+	}
+
+	//Rover 3 case:
+	if(useX && useY)
+	{
+		cout << "case 3 X = -1, Y = 1" << endl;
+		centerPoint.x = centerLocation.x - 1;
+		centerPoint.y = centerLocation.y + 1;
+		cout << " centerPointX: " << centerPoint.x << "searchPointX:" << searchPoint.x << endl;
+		cout << " centerPointY: " << centerPoint.y << "searchPointY:" << searchPoint.y << endl;
+		if(searchPoint.x < centerPoint.x || searchPoint.y > centerPoint.x)
+		{
+			cout << "Not in bound" << endl;
+			return false;
+		}
+	}
+
+	return true;
 }
