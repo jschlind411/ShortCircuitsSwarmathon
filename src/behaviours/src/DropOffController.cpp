@@ -50,29 +50,43 @@ void DropOffController::DropAndLeave() {
 
   result.pd.cmdVel = -0.3;
   result.pd.cmdAngularError = 0.0;
+
+  finalInterrupt = true;
 }
 
 void DropOffController::CenterRobot() {
   cout << "+++ Centering Robot" << endl;
-  isPrecisionDriving = true;
-  result.type = precisionDriving;
+  cout << "right: " << right << "\tleft: " << left << endl;
+  result.pd.cmdAngularError = -1;
 
-  if (countLeft > countRight) {
-    result.pd.cmdAngular = -K_angular;
-  }
-  else {
-    result.pd.cmdAngular = K_angular; 
-  }
+  // isPrecisionDriving = true;
+  // result.type = precisionDriving;
 
-  result.pd.setPointVel = 0.0;
-  result.pd.cmdVel = 0.0;
-  result.pd.setPointYaw = 0;
+  // if (countLeft > countRight) {
+  //   result.pd.cmdAngular = -K_angular;
+  // }
+  // else {
+  //   result.pd.cmdAngular = K_angular; 
+  // }
+
+  // result.pd.setPointVel = 0.0;
+  // result.pd.cmdVel = 0.0;
+  // result.pd.setPointYaw = 0;
 }
 
 Result DropOffController::DoWork() {
+  cout << "centerLocation.x: " << centerLocation.x << "\tcenterLocation.y: " << centerLocation.y << endl;
+
+  // Check if we should still be doing work
+  if (finalInterrupt) {
+    result.type = behavior;
+    result.b = nextProcess;
+    result.reset = true;
+  }
 
   // Take care of obstacles
 
+  // Nest Behavior
   if(IsAtNest())
   {
     CenterRobot();
@@ -84,7 +98,16 @@ Result DropOffController::DoWork() {
     return result;
   }
 
+  // Otherwise if we are not at the nest, turn the robot and go towards the nest
+  result.wpts.waypoints.clear();
+  result.wpts.waypoints.push_back(this->centerLocation);
 
+
+
+  bool runDefault = false;
+
+  // DEFAULT CODE
+  if (runDefault) { 
   cout << "8" << endl;
 
   int count = countLeft + countRight;
@@ -306,7 +329,7 @@ Result DropOffController::DoWork() {
     centerApproach = false;
     returnTimer = current_time;
   }
-
+  } //end default
   return result;
 }
 
