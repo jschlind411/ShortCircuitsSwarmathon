@@ -428,24 +428,35 @@ void SearchController::SetBoarderValues(float initTheta)
 	   			 	 R2
 	    (pi) E< R1 __center__R3 >W (0)
 	     	         |
-			(-, -)         (+,-)
+			(-, -)   R2      (+,-)
 					 S
 	*/
 
 	//Rover 1: initial theta range (pi/4, 7pi/4)
 	//if range is satisfied sets useY boundary value to true
 	cout << "range (" << M_PI/4 << "," << 7*M_PI/4  << ")"<< endl;
-	if(initTheta > 0 && initTheta < M_PI/4 || initTheta > 7*M_PI/4  && initTheta < 2*M_PI)
+	if(initTheta > 0 && initTheta < M_PI/4 || initTheta > 7*M_PI/4  && initTheta < 2*M_PI) //because X = 0 angle coulde be 0 radians or 2pi
 	{
 		useX = false;
 		useY = true;
 		cout << "range (pi/4, 7pi/5)" << endl;
 	}
 
+	//Rover 2: initial theta range (pi/4, 3pi/4)
+	//if range is satisfied sets useX boundary value to true
+	cout << "range (" << M_PI/4 << "," << 3*M_PI/4 << ")" << endl;
+	if(initTheta > M_PI/4 && initTheta < 3*M_PI/4)
+		//initTheta > 5*M_PI/4 && initTheta < 3*M_PI/2 || initTheta > 3*M_PI/2 && initTheta < 7*M_PI/4)
+	{
+		useX = true;
+		useY = false;
+		cout << "range (pi/4, 3pi/4)" << endl;
+	}
+
 	//Rover 2: initial theta range (5pi/4, 7pi/4)
 	//if range is satisfied sets useX boundary value to true
-	cout << "range (" << 5*M_PI/4 << "," << 7*M_PI/4 << ")" << endl;
-	if(initTheta > 5*M_PI/4 && initTheta < 3*M_PI/2 || initTheta > 3*M_PI/2 && initTheta < 7*M_PI/4)
+    cout << "range (" << 5*M_PI/4 << "," << 7*M_PI/4 << ")" << endl;
+	if(initTheta > 5*M_PI/4 && initTheta < 7*M_PI/4)
 	{
 		useX = true;
 		useY = false;
@@ -455,7 +466,8 @@ void SearchController::SetBoarderValues(float initTheta)
 	//Rover 3: initial theta range (3pi/4 , 5pi/4)
 	//if range is satisfied sets useX and useY value to true
 	cout << "range (" << 3*M_PI/4 << "," << 5*M_PI/4 << ")" << endl;
-	if(initTheta > 3*M_PI/4 && initTheta < M_PI || initTheta > M_PI && initTheta < 5*M_PI/4)
+	//if(initTheta > 3*M_PI/4 && initTheta < M_PI || initTheta > M_PI && initTheta < 5*M_PI/4)
+	if(initTheta > 3*M_PI/4 && initTheta < 5*M_PI/4)
 	{
 		useX = true;
 		useY = true;
@@ -483,7 +495,7 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
 	}
 
 	//Rover 2 case: 
-	if(useX)
+	else if(useX)
 	{
 		cout << "case 1 X = 1" << endl;
 		centerPoint.x = centerLocation.x + 1;
@@ -496,14 +508,14 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
 	}
 
 	//Rover 3 case:
-	if(useX && useY)
+	else if(useX && useY)
 	{
 		cout << "case 3 X = -1, Y = 1" << endl;
 		centerPoint.x = centerLocation.x - 1;
 		centerPoint.y = centerLocation.y + 1;
 		cout << " centerPointX: " << centerPoint.x << "searchPointX:" << searchPoint.x << endl;
 		cout << " centerPointY: " << centerPoint.y << "searchPointY:" << searchPoint.y << endl;
-		if(searchPoint.x < centerPoint.x || searchPoint.y > centerPoint.x)
+		if(searchPoint.x < centerPoint.x || searchPoint.y > centerPoint.y)
 		{
 			cout << "Not in bound" << endl;
 			return false;
