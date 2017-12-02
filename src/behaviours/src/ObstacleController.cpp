@@ -6,6 +6,7 @@ ObstacleController::ObstacleController()
   obstacleDetected = false;
   obstacleInterrupt = false;
   result.PIDMode = CONST_PID;
+  total_center_tags_seen = 0;
 }
 
 void ObstacleController::Reset() {
@@ -16,29 +17,32 @@ void ObstacleController::Reset() {
 }
 
 // Avoid crashing into objects detected by the ultraound
-void ObstacleController::avoidObstacle() {
+
+void ObstacleController::avoidObstacle() 
+{
 
   // If obstacle is too close, move to the direction least obstructed
-  if (right < 0.8 || center < 0.8 || left < 0.8) {
+  if (right < 0.8 || center < 0.8 || left < 0.8) 
+  {
     
     // Figure out which way is probably is best to turn
-    float bestSide = std::max({right,center,left}, [](const float& s1, const float& s2) {
-                                   return s1 < s2;
-                               });
+    float bestSide = std::max({right,center,left}, [](const float& s1, const float& s2) { return s1 < s2; });
 
     if (bestSide == left)
     {
       result.pd.cmdAngular = K_angular;
       cout << "turning left" << endl;
 
-    } else {
+    } 
+    else 
+    {
       result.pd.cmdAngular = -K_angular;
       cout << "turning right" << endl;
     }
     result.type = precisionDriving;
 
     // result.pd.cmdAngular = -K_angular;
-
+    
     result.pd.setPointVel = 0.0;
     result.pd.cmdVel = 0.0;
     result.pd.setPointYaw = 0;
@@ -49,7 +53,8 @@ void ObstacleController::avoidObstacle() {
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone()
 {
-  
+
+  /*
     result.type = precisionDriving;
 
     result.pd.cmdVel = 0.0;
@@ -68,6 +73,18 @@ void ObstacleController::avoidCollectionZone()
     result.pd.setPointVel = 0.0;
     result.pd.cmdVel = 0.0;
     result.pd.setPointYaw = 0;
+*/
+
+    //BACK UP
+
+    result.type = precisionDriving;
+
+    cout << "Saw Center Tags:  " << total_center_tags_seen << endl;
+
+    result.pd.setPointVel = 0.0;
+    result.pd.cmdVel = -0.2;
+    result.pd.setPointYaw = 0;
+
 }
 
 
@@ -79,14 +96,17 @@ Result ObstacleController::DoWork()
   result.PIDMode = CONST_PID;
 
   // The obstacle is an april tag marking the collection zone
-  if(collection_zone_seen){
+  if(collection_zone_seen)
+  {
     avoidCollectionZone();
   }
-  else {
+  else
+  {
     avoidObstacle();
   }
 
-  if (can_set_waypoint) {
+  if (can_set_waypoint)
+  {
 
     can_set_waypoint = false;
     set_waypoint = false;
@@ -105,7 +125,8 @@ Result ObstacleController::DoWork()
 }
 
 
-void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float sonarright) {
+void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float sonarright)
+{
   left = sonarleft;
   right = sonarright;
   center = sonarcenter;
@@ -113,16 +134,19 @@ void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float 
   ProcessData();
 }
 
-void ObstacleController::setCurrentLocation(Point currentLocation) {
+void ObstacleController::setCurrentLocation(Point currentLocation)
+{
   this->currentLocation = currentLocation;
 }
 
-void ObstacleController::ProcessData() {
+void ObstacleController::ProcessData()
+{
 
   //timeout timer for no tag messages
   long int Tdifference = current_time - timeSinceTags;
   float Td = Tdifference/1e3;
-  if (Td >= 0.5) {
+  if (Td >= 0.5)
+  {
     collection_zone_seen = false;
     phys= false;
     if (!obstacleAvoided)
@@ -132,19 +156,25 @@ void ObstacleController::ProcessData() {
   }
 
   //Process sonar info
-  if(ignore_center_sonar){
-    if(center > reactivate_center_sonar_threshold){
+  if(ignore_center_sonar)
+  {
+    if(center > reactivate_center_sonar_threshold)
+    {
       //ignore_center_sonar = false; //look at sonar again beacuse center ultrasound has gone long
     }
-    else{
+    else
+    {
       center = 3;
     }
   }
-  else {
-    if (center < 3.0) {
+  else
+  {
+    if (center < 3.0)
+    {
       result.wristAngle = 0.7;
     }
-    else {
+    else
+    {
       result.wristAngle = -1;
     }
   }
@@ -173,44 +203,51 @@ void ObstacleController::ProcessData() {
 // Added relative pose information so we know whether the
 // top of the AprilTag is pointing towards the rover or away.
 // If the top of the tags are away from the rover then treat them as obstacles. 
-void ObstacleController::setTagData(vector<Tag> tags){
+void ObstacleController::setTagData(vector<Tag> tags)
+{
   collection_zone_seen = false;
   count_left_collection_zone_tags = 0;
   count_right_collection_zone_tags = 0;
+  total_center_tags_seen = 0;
 
   // this loop is to get the number of center tags
-  if (!targetHeld) {
-    for (int i = 0; i < tags.size(); i++) {
-      if (tags[i].getID() == 256) {
-
-	collection_zone_seen = checkForCollectionZoneTags( tags );
-        timeSinceTags = current_time;
-      }
-    }
+  if (!targetHeld)
+  {
+    collection_zone_seen = checkForCollectionZoneTags( tags );
+    timeSinceTags = current_time;
   }
 }
 
-bool ObstacleController::checkForCollectionZoneTags( vector<Tag> tags ) {
+bool ObstacleController::checkForCollectionZoneTags( vector<Tag> tags )
+{
 
-  for ( auto & tag : tags ) { 
+  for ( auto & tag : tags )
+  {
+    if (tag.getID() == 256)
+    {
 
-    // Check the orientation of the tag. If we are outside the collection zone the yaw will be positive so treat the collection zone as an obstacle. If the yaw is negative the robot is inside the collection zone and the boundary should not be treated as an obstacle. This allows the robot to leave the collection zone after dropping off a target.
-    if ( tag.calcYaw() > 0 ) 
+      // Check the orientation of the tag. If we are outside the collection zone the yaw will be positive so treat the collection zone as an obstacle. If the yaw is negative the robot is inside the collection zone and the boundary should not be treated as an obstacle. This allows the robot to leave the collection zone after dropping off a target.
+      if ( tag.calcYaw() > 0 )
       {
-	// checks if tag is on the right or left side of the image
-	if (tag.getPositionX() + camera_offset_correction > 0) {
-	  count_right_collection_zone_tags++;
-	  
-	} else {
-	  count_left_collection_zone_tags++;
-	}
+        // checks if tag is on the right or left side of the image
+        if (tag.getPositionX() + camera_offset_correction > 0)
+        {
+          count_right_collection_zone_tags++;
+
+        }
+        else
+        {
+          count_left_collection_zone_tags++;
+        }
+
+        total_center_tags_seen++;
       }
+    }
     
   }
 
-
   // Did any tags indicate that the robot is inside the collection zone?
-  return count_left_collection_zone_tags + count_right_collection_zone_tags > 0;
+  return total_center_tags_seen > 0;
 
 }
 
@@ -245,7 +282,7 @@ bool ObstacleController::HasWork() {
 
 //ignore center ultrasound
 void ObstacleController::setIgnoreCenterSonar(){
-  ignore_center_sonar = true; 
+  ignore_center_sonar = true;
 }
 
 void ObstacleController::setCurrentTimeInMilliSecs( long int time )

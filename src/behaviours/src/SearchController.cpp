@@ -139,8 +139,6 @@ Result SearchController::DoWork()
     cout << "Doesn't have search area, generating one" << endl;
     searchLocation = ChooseRandomPoint();
     destination = searchLocation;
-    hasSearchPoint = true;    //say we have a search point
-    returning = false;        //reset our returning variable
   }
   else //otherwise search around the area
   {
@@ -229,6 +227,9 @@ Point SearchController::ChooseRandomPoint()
   temp.x = centerLocation.x + (searchDist * cos(temp.theta));
   temp.y = centerLocation.y + (searchDist * sin(temp.theta));
 
+  hasSearchPoint = true;    //say we have a search point
+  returning = false;        //reset our returning variable
+
   return temp;
 }
 
@@ -290,14 +291,20 @@ Point SearchController::InterruptedLogic()
 
   Point temp;
 
+  //---------------------------------------------------------------------------------------
+
   //CHECK ATTEMPTS
+  //DUAL STAGE CHECK:
+  // 1.)  Check to see how many times the rover has tried to get to a point
+  // 2.)  Check to see how many times the rover has exceeded its tries in step 1
+
   const int num_of_tries = 3;
   bool exceededAttempts = false;
 
   attemptCount++;
   cout << "Avoided Obstacle; Attempt #" << attemptCount << endl;
 
-  //if we have exceeded our limits of attempts
+  //if we have exceeded our limits of attempts (1st CHECK)
   if(attemptCount > num_of_tries)
   {
     cout << "Exceeded # Attempts" << endl;
@@ -306,7 +313,7 @@ Point SearchController::InterruptedLogic()
     attemptCount = 0;               //RESET attempt count
   }
 
-  //If rover has failed consistantly 3 times to get anywhere
+  //If rover has failed consistantly 3 times to get anywhere (2nd CHECK)
   if(numTimesExceeded > num_of_tries)
   {
     //JUST GO HOME!  Reset all variables
@@ -316,6 +323,10 @@ Point SearchController::InterruptedLogic()
     positionInSearch = 0;
     temp = centerLocation;
   }
+
+  //---------------------------------------------------------------------------------------
+  //BEGIN LOGIC
+  //---------------------------------------------------------------------------------------
 
   //This is the case if returning back to center after a pattern is complete or trying to drive across the center after being interrupted by obstacle
   if(!hasSearchPoint)
@@ -334,6 +345,8 @@ Point SearchController::InterruptedLogic()
       temp = centerLocation;         //go back to center
     }
   }
+
+  //---------------------------------------------------------------------------------------
 
   //This is the case if driving to a position to start a deliberate pattern but never made it there
   else if(!hasStartedPattern && !returning)
@@ -356,6 +369,8 @@ Point SearchController::InterruptedLogic()
       temp = centerLocation;
     }
   }
+
+  //---------------------------------------------------------------------------------------
 
   //Otherwise it was in the middle of the deliberate search pattern somewhere...
   else
@@ -403,9 +418,9 @@ Point SearchController::Turn180()
 {
   Point temp;
 
-  float theta = currentLocation.theta + M_PI;
-  temp.x = currentLocation.x + (0.5 * cos(theta));
-  temp.y = currentLocation.y + (0.5 * sin(theta));
+  temp.theta = currentLocation.theta + M_PI;
+  temp.x = currentLocation.x + (0.5 * cos(temp.theta));
+  temp.y = currentLocation.y + (0.5 * sin(temp.theta));
   return temp;
 }
 
@@ -421,4 +436,11 @@ bool SearchController::ShouldInterrupt()
 bool SearchController::HasWork()
 {
   return true;
+}
+
+void SearchController::ResetSearchState()
+{
+  returning = false;
+  hasSearchPoint = false;
+  positionInSearch = 0;
 }
