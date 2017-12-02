@@ -67,6 +67,7 @@ private:
 
   unsigned int count_left_collection_zone_tags;
   unsigned int count_right_collection_zone_tags;
+  unsigned int total_center_tags_seen;
 
   // Ignore the center sonar because we are carrying a target
   bool ignore_center_sonar = false;

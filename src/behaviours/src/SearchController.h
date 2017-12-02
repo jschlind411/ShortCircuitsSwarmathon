@@ -61,6 +61,7 @@ private:
   Point ChooseRandomPoint();                  //Creates a random point to search around
   Point GenDeliberatePoint();                 //Creates a point on the octagonal shaped fixed search pattern
   Point InterruptedLogic();                   //Handles ALL logic for if the search controller was interrupted by obstacle
+  void ResetSearchState();
 
   Point Turn180();                            //Turns rover around 180 degrees
 

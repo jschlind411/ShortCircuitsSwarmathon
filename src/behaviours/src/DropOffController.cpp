@@ -29,7 +29,8 @@ DropOffController::~DropOffController() {
 
 }
 
-Result DropOffController::DoWork() {
+Result DropOffController::DoWork()
+{
 
   cout << "8" << endl;
 
@@ -90,7 +91,6 @@ Result DropOffController::DoWork() {
     timerTimeElapsed = 0;
 
     return result;
-
   }
   else if (timerTimeElapsed >= 2)//spin search for center
   {
@@ -146,6 +146,7 @@ Result DropOffController::DoWork() {
       result.b = nextProcess;
       return result;
     }
+
     isPrecisionDriving = true;
 
     if (seenEnoughCenterTags) //if we have seen enough tags
@@ -213,7 +214,8 @@ Result DropOffController::DoWork() {
 
   //was on approach to center and did not seenEnoughCenterTags
   //for lostCenterCutoff seconds so reset.
-  else if (centerApproach) {
+  else if (centerApproach)
+  {
 
     long int elapsed = current_time - lastCenterTagThresholdTime;
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
@@ -227,11 +229,14 @@ Result DropOffController::DoWork() {
 
       result.type = waypoint;
       result.wpts.waypoints.push_back(this->centerLocation);
-      if (isPrecisionDriving) {
+
+      if (isPrecisionDriving)
+      {
         result.type = behavior;
         result.b = prevProcess;
         result.reset = false;
       }
+
       isPrecisionDriving = false;
       interrupt = false;
       precisionInterrupt = false;
@@ -288,7 +293,8 @@ void DropOffController::Reset() {
 
 }
 
-void DropOffController::SetTargetData(vector<Tag> tags) {
+void DropOffController::SetTargetData(vector<Tag> tags)
+{
   countRight = 0;
   countLeft = 0;
 
