@@ -155,6 +155,13 @@ Result SearchController::DoWork()
     attemptCount = 0;
   }
 
+
+  // cout << ">>> DESTINATION: " << destination.x << ", " << destination.y << endl;
+  // destination.x = 4.98511;
+  // destination.y = -2.71179;
+
+  //find appropriate theta using robots current position and the position recently generated
+  // destination.theta = atan2((destination.y - currentLocation.y), (destination.x - currentLocation.x));
   result.wpts.waypoints.clear();
   result.wpts.waypoints.insert(result.wpts.waypoints.begin(), destination);
 
