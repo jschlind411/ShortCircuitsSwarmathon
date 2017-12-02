@@ -77,14 +77,57 @@ Result SearchController::DoWork()
   //select new position 50 cm from current location
   if (first_waypoint)
   {
-    first_waypoint = false;
+    //first_waypoint = false;
 
-    float initTheta = angles::normalize_angle_positive(currentLocation.theta);
-    cout << "(" << currentLocation.x << "," << currentLocation.y << ")" << endl;
-    cout << "CALLING SetBoarderValues initTheta" << initTheta << endl;
-    SetBoarderValues(initTheta);
+    SetBoarderValues();
 
-    destination = Turn180();
+    if(!useY)
+    {
+      searchLocation = ChooseRandomPoint();
+      useY = true;
+    }
+
+    cout << "Current Point X:  " << searchLocation.x << "  Current Point Y:  " << searchLocation.y << endl;
+
+    if(useX)
+    {
+      cout << "Distance from Center for boundry:  " << boundary_distance << endl;
+
+      float checkX = centerLocation.x + boundary_distance;
+      cout << "Can't go past on X: " << checkX << endl;
+
+      if(boundary_distance < 0)
+      {
+        if(searchLocation.x < checkX)
+        {
+          cout << "NOT A VALID POINT" << endl;
+        }
+        else
+        {
+          cout << "VALID POINT" << endl;
+        }
+      }
+      else if(boundary_distance > 0)
+      {
+        if(searchLocation.x > checkX)
+        {
+          cout << "NOT A VALID POINT" << endl;
+        }
+        else
+        {
+          cout << "VALID POINT" << endl;
+        }
+
+      }
+
+    }
+    else
+    {
+      cout << "Boundry on Y axis after:  " << centerLocation.y + boundary_distance;
+    }
+
+    //destination = Turn180();
+    destination = currentLocation;
 
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), destination);
@@ -220,6 +263,10 @@ float SearchController::ChooseRandomTheta(float roverAngle)
 
 Point SearchController::ChooseRandomPoint()
 {
+
+  //create bool
+  //start loop
+
   //ARENA IS 50x50
   const int MAX_ARENA_SIZE = 7;
   const int MIN_SEARCH_DIST = 1;
@@ -235,6 +282,11 @@ Point SearchController::ChooseRandomPoint()
 
   temp.x = centerLocation.x + (searchDist * cos(temp.theta));
   temp.y = centerLocation.y + (searchDist * sin(temp.theta));
+
+  //pass temp to check method
+  //check if result is good
+  //if not repeat loop
+  //if good return temp
 
   hasSearchPoint = true;    //say we have a search point
   returning = false;        //reset our returning variable
@@ -429,11 +481,14 @@ Point SearchController::Turn180()
 
   temp.theta = currentLocation.theta + M_PI;
   temp.x = currentLocation.x + (0.5 * cos(temp.theta));
-  temp.y = currentLocation.y + (0.5 * sin(temp.theta));
+  temp.y = currentLocation.y + (0.5 * sin(temp.theta));  //Q4:  0 to pi/2
+  //Q3:  pi/2 to pi
+  //Q2:  pi to 3pi/2
+  //Q1:  3pi/2 to 2pi
   return temp;
 }
 
-void SearchController::SetBoarderValues(float initTheta)
+void SearchController::SetBoarderValues()
 {
 
 	/* Rover position on odom map
@@ -448,47 +503,147 @@ void SearchController::SetBoarderValues(float initTheta)
 					 S
 	*/
 
+
+  //Get Current Rovers Theta
+  //---------------------------------------------------------------------------------------
+
+  float initTheta = angles::normalize_angle_positive(currentLocation.theta);
+  //cout << "(" << currentLocation.x << "," << currentLocation.y << ")" << endl;
+  //cout << "CALLING SetBoarderValues initTheta" << initTheta << endl;
+
+  //---------------------------------------------------------------------------------------
+
+  //Check to see which Quadrant it is in, and assign it that quadrant
+
+  //---------------------------------------------------------------------------------------
+
+
+  //Conditions for Quadrants
+
+  //Q1: (theta < pi/4  || theta > 7pi/4)
+  //Q2: (theta < 3pi/4 || theta > pi/4)
+  //Q3: (theta < 5pi/5 || theta > 3pi/4)
+  //Q4: (theta < 7pi/4 || theta > 5pi/4)
+
+  const float PI_4 = .785398;
+  const float PI3_4 = 2.356194;
+  const float PI5_4 = 3.926990;
+  const float PI7_4 = 5.497787;
+
+  int quadrant = 0;
+
+  /*
+
+        (3pi/4) \   Q2  /(pi/4)
+                 \  |  /
+                  \ | /
+                   \|/
+  ------Q3----------|----------Q1------
+                   /|\
+                  / | \
+                 /  |  \
+        (5pi/4) /   Q4  \(7pi/4)
+  */
+
+
+  if(initTheta <= (PI_4))
+  {
+    cout << "I AM IN QUADRANT 1:  "  << initTheta << endl;
+    quadrant = 1;
+  }
+  else if(initTheta <= (PI3_4))
+  {
+    cout << "I AM IN QUADRANT 2:  " << initTheta << endl;
+    quadrant = 2;
+  }
+  else if(initTheta <= (PI5_4))
+  {
+    cout << "I AM IN QUADRANT 3:  " << initTheta << endl;
+    quadrant = 3;
+  }
+  else if (initTheta <= PI7_4)
+  {
+    cout << "I AM IN QUADRANT 4:  " << initTheta << endl;
+    quadrant = 4;
+  }
+  else
+  {
+    cout << "I AM IN QUADRANT 1:  "  << initTheta << endl;
+    quadrant = 1;
+  }
+
+  //---------------------------------------------------------------------------------------
+
+  //Calculate Boundaries relative to the starting quadrant
+  // - Determine if the boundry is in the X or the Y
+  // - Determine sign
+
+  //---------------------------------------------------------------------------------------
+
+  switch (quadrant)
+  {
+    case 1:
+      useX = true;
+      boundary_distance = -1;
+      break;
+    case 2:
+      useX = false;
+      boundary_distance = -1;
+      break;
+    case 3:
+      useX = true;
+      break;
+    case 4:
+      useX = false;
+    default:
+      break;
+  }
+
+/*
+
 	//Rover 1: initial theta range (pi/4, 7pi/4)
 	//if range is satisfied sets useY boundary value to true
-	cout << "range (" << M_PI/4 << "," << 7*M_PI/4  << ")"<< endl;
+  //cout << "range (" << M_PI/4 << "," << 7*M_PI/4  << ")"<< endl;
 	if(initTheta > 0 && initTheta < M_PI/4 || initTheta > 7*M_PI/4  && initTheta < 2*M_PI) //because X = 0 angle coulde be 0 radians or 2pi
 	{
 		useX = false;
 		useY = true;
-		cout << "range (pi/4, 7pi/5)" << endl;
+    //cout << "range (pi/4, 7pi/5)" << endl;
 	}
 
 	//Rover 2: initial theta range (pi/4, 3pi/4)
 	//if range is satisfied sets useX boundary value to true
-	cout << "range (" << M_PI/4 << "," << 3*M_PI/4 << ")" << endl;
+  //cout << "range (" << M_PI/4 << "," << 3*M_PI/4 << ")" << endl;
 	if(initTheta > M_PI/4 && initTheta < 3*M_PI/4)
 		//initTheta > 5*M_PI/4 && initTheta < 3*M_PI/2 || initTheta > 3*M_PI/2 && initTheta < 7*M_PI/4)
 	{
 		useX = true;
 		useY = false;
-		cout << "range (pi/4, 3pi/4)" << endl;
+    //cout << "range (pi/4, 3pi/4)" << endl;
 	}
 
 	//Rover 2: initial theta range (5pi/4, 7pi/4)
 	//if range is satisfied sets useX boundary value to true
-    cout << "range (" << 5*M_PI/4 << "," << 7*M_PI/4 << ")" << endl;
+    //cout << "range (" << 5*M_PI/4 << "," << 7*M_PI/4 << ")" << endl;
 	if(initTheta > 5*M_PI/4 && initTheta < 7*M_PI/4)
 	{
 		useX = true;
 		useY = false;
-		cout << "range (5pi/4, 7pi/4)" << endl;
+    //cout << "range (5pi/4, 7pi/4)" << endl;
 	}
 
 	//Rover 3: initial theta range (3pi/4 , 5pi/4)
 	//if range is satisfied sets useX and useY value to true
-	cout << "range (" << 3*M_PI/4 << "," << 5*M_PI/4 << ")" << endl;
+  //cout << "range (" << 3*M_PI/4 << "," << 5*M_PI/4 << ")" << endl;
 	//if(initTheta > 3*M_PI/4 && initTheta < M_PI || initTheta > M_PI && initTheta < 5*M_PI/4)
 	if(initTheta > 3*M_PI/4 && initTheta < 5*M_PI/4)
 	{
 		useX = true;
 		useY = true;
-		cout << "range (3pi/4 , 5pi/4)" << endl;
+    //cout << "range (3pi/4 , 5pi/4)" << endl;
 	}
+
+  */
 }
 
 bool SearchController::IsWithinBoundary(Point searchPoint)

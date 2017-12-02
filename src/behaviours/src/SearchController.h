@@ -61,6 +61,7 @@ private:
   //Flag for which x-axis or y-axis boarder line restriction
   bool useX = false;
   bool useY = false;
+  int boundary_distance = 1;
 
   float ChooseRandomTheta(float roverAngle);  //Chooses Random Theta
   Point ChooseRandomPoint();                  //Creates a random point to search around
@@ -69,7 +70,7 @@ private:
   void ResetSearchState();
   
   Point Turn180();                            //Turns rover around 180 degrees
-  void  SetBoarderValues(float initTheta);    //Sets up boarder values.
+  void  SetBoarderValues();    //Sets up boarder values.
   bool  IsWithinBoundary(Point searchPoint);  //Checks if the searchPoint. 
 
 };
