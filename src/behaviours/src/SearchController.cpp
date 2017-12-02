@@ -476,7 +476,7 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
 	cout << "CHECKING IsWithinBoundary" << endl;
 
 	//Rover 1 case:
-	if(useY)
+	if(useY && !useX)
 	{
 		cout << "case 2 Y = -1" << endl;
 		centerPoint.y = centerLocation.y - 1;
@@ -489,7 +489,7 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
 	}
 
 	//Rover 2 case: 
-	else if(useX)
+	else if(useX && !useY)
 	{
 		cout << "case 1 X = 1" << endl;
 		centerPoint.x = centerLocation.x + 1;
