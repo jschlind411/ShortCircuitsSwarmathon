@@ -4,6 +4,7 @@
 #include <random_numbers/random_numbers.h>
 #include "Controller.h"
 
+using namespace std;
 /**
  * This class implements the search control algorithm for the rovers. The code
  * here should be modified and enhanced to improve search performance.
@@ -57,13 +58,19 @@ private:
   int positionInSearch;   //keeps track of current position inside the fixed octagon position
   int numTimesExceeded;   //Holds the number of times searchcontroller has attempted to go to a point and exceeded its trial attempts.
 
+  //Flag for which x-axis or y-axis boarder line restriction
+  bool useX = false;
+  bool useY = false;
+
   float ChooseRandomTheta(float roverAngle);  //Chooses Random Theta
   Point ChooseRandomPoint();                  //Creates a random point to search around
   Point GenDeliberatePoint();                 //Creates a point on the octagonal shaped fixed search pattern
   Point InterruptedLogic();                   //Handles ALL logic for if the search controller was interrupted by obstacle
   void ResetSearchState();
-
+  
   Point Turn180();                            //Turns rover around 180 degrees
+  void  SetBoarderValues(float initTheta);    //Sets up boarder values.
+  bool  IsWithinBoundary(Point searchPoint);  //Checks if the searchPoint. 
 
 };
 
