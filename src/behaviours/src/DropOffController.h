@@ -38,13 +38,18 @@ private:
   bool isCentered();
   bool ReadyToDrop();
   bool AmILost();
+  bool TimeFinishedBackingOut();
   void DropAndLeave();
   void CenterRobot();
   void SearchForNest();
   void GoToNest();
+  void FlushController();
+
+  bool ShouldGoBackHome();
+  void SetDestinationNest();
 
   bool atNest;
-  bool maxDropOffTime = 10;
+  bool maxDropOffTime = 15;
   const float K_angular = 1.0; //radians a second
 
   // End George Values
