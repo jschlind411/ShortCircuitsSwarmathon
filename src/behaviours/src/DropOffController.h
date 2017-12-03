@@ -47,10 +47,15 @@ private:
 
   bool ShouldGoBackHome();
   void SetDestinationNest();
+  void RunNestTimer();
+  void CheckIfLeftNest();
 
   bool atNest;
   bool maxDropOffTime = 15;
+  long int nestTimer; //Timer used for nest behavior
   const float K_angular = 1.0; //radians a second
+  const float nestVelocity = 0.3;
+  const float nestWalkThreshold = 1.5;
 
   // End George Values
 

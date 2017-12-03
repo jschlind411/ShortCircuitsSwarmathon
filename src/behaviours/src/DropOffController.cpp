@@ -57,17 +57,26 @@ bool DropOffController::TimeFinishedBackingOut() {
 }
 
 void DropOffController::DropAndLeave() {
-  // Drop block
-  result.fingerAngle = M_PI_2; //open fingers
-  result.wristAngle = 0; //raise wrist
-  // targetHeld = false;
-  cout << "Dropped Target" << endl;
-
-  // Set robot to leave
+  
+  // Has the rover moved into the nest enough? 
+  //  - If so drop off the box and back out
+  //  - Else keep moving into the circle
   isPrecisionDriving = true;
   result.type = precisionDriving;
-  result.pd.cmdVel = -0.3;
   result.pd.cmdAngularError = 0.0;
+  
+  // Check if time to drop. If drop then leave. Else keep driving in.
+  if (nestTimer > nestWalkThreshold) {
+     // Drop block
+    result.fingerAngle = M_PI_2; //open fingers
+    result.wristAngle = 0; //raise wrist
+    targetHeld = false;
+    cout << "Dropped Target" << endl;
+    // Set robot to leave
+    result.pd.cmdVel = -nestVelocity;
+  } else {
+    result.pd.cmdVel = nestVelocity;
+  }
 }
 
 void DropOffController::CenterRobot() {
@@ -141,8 +150,10 @@ void DropOffController::SearchForNest() {
 }
 
 void DropOffController::FlushController() {
-  // targetHeld = false;
-  // reachedCollectionPoint = true;
+  finalInterrupt = true;
+  targetHeld = false;
+  reachedCollectionPoint = true;
+  isPrecisionDriving = false;
   result.type = behavior;
   result.b = nextProcess;
   result.reset = true;
@@ -167,6 +178,26 @@ void DropOffController::SetDestinationNest() {
   timerTimeElapsed = 0;
 }
 
+void DropOffController::RunNestTimer() {
+  // Start nest timer if not already
+  if (nestTimer < 0) {
+    nestTimer = 0;
+    returnTimer = current_time;
+    return;
+  }
+
+  // Otherwise increment the timer
+  long int elapsed = current_time - returnTimer;
+  nestTimer = elapsed/1e3; // Convert from milliseconds to seconds
+
+}
+
+void DropOffController::CheckIfLeftNest() {
+  if (nestTimer > -nestWalkThreshold) {
+    finalInterrupt = true;
+  }
+}
+
 /**
  * DropOffController is tasked with setting the waypoint of where to drop off the object
  * tasked to drive onto the collection zone (the nest)
@@ -178,6 +209,9 @@ Result DropOffController::DoWork() {
   cout << ">>>>>>>>>>>>>>>>>>>> DropOffController" << endl;
   cout << ">>>>>>>>>>>>>>>>>>>> timerTimeElapsed: " << timerTimeElapsed << endl;
   
+  FlushController();
+  return result;
+
   if (!runDefault){
   // Check if we should still be doing work
   if (finalInterrupt) {
@@ -200,8 +234,9 @@ Result DropOffController::DoWork() {
     
     cout << ">>>>>>>>>>>> IS AT NEST" << endl;
     if (isCentered()) {
-      // InsideNestBehavior();
+      RunNestTimer();
       DropAndLeave();
+      CheckIfLeftNest();
     } else {
       CenterRobot();
     }
@@ -514,6 +549,7 @@ Result DropOffController::DoWork() {
 void DropOffController::Reset() {
   // George Begin
   atNest = false;
+  nestTimer = -1;
   // George End
 
   result.type = behavior;
@@ -581,6 +617,7 @@ void DropOffController::ProcessData() {
   }
 }
 
+// ShouldInterrupt should return true if we would like the drop off controller to do something
 bool DropOffController::ShouldInterrupt() {
   ProcessData();
   if (startWaypoint && !interrupt) {
@@ -604,7 +641,6 @@ bool DropOffController::HasWork() {
   if(timerTimeElapsed > -1) {
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
-    returnTimer = current_time;
   }
 
   if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving) {
