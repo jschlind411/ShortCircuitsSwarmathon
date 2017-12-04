@@ -218,10 +218,11 @@ Point SearchController::ChooseRandomPoint()
   //start loop
   Point temp;
   isValid = false;
+
   while(!isValid)
   {
     //ARENA IS 50x50
-    const int MAX_ARENA_SIZE = 7;
+    const int MAX_ARENA_SIZE = 4;
     const int MIN_SEARCH_DIST = 1;
 
     float searchDist = rng->uniformReal(MIN_SEARCH_DIST, MAX_ARENA_SIZE);
@@ -239,7 +240,7 @@ Point SearchController::ChooseRandomPoint()
       isValid = true;
       hasSearchPoint = true;    //say we have a search point
       returning = false;        //reset our returning variable
-      return temp;
+      //return temp;
     }
   }
   //pass temp to check method
