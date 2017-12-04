@@ -55,7 +55,6 @@ private:
      * Member variables
      */
 
-
   bool obstacleInterrupt;
   bool obstacleDetected;
   bool obstacleAvoided;
@@ -67,6 +66,7 @@ private:
 
   unsigned int count_left_collection_zone_tags;
   unsigned int count_right_collection_zone_tags;
+  unsigned int total_center_tags_seen;
 
   // Ignore the center sonar because we are carrying a target
   bool ignore_center_sonar = false;
@@ -87,6 +87,10 @@ private:
   bool can_set_waypoint = false;
 
   float camera_offset_correction = 0.020; //meters;
+
+
+  // ==== George Vars ====
+  bool evalNextStep = false;
 };
 
 #endif // OBSTACLECONTOLLER_H
