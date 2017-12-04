@@ -58,9 +58,10 @@ private:
   int positionInSearch;   //keeps track of current position inside the fixed octagon position
   int numTimesExceeded;   //Holds the number of times searchcontroller has attempted to go to a point and exceeded its trial attempts.
 
-  //Flag for which x-axis or y-axis boarder line restriction
-  bool useX = false;
-  bool useY = false;
+  
+  bool useX = false;         //Flag for which x-axis or y-axis boarder line restriction
+  bool isValid = false;      //Flag for validating if search point is valid
+  int boundary_distance = 1; //Offset value for deciding a rover's boundary limits
 
   float ChooseRandomTheta(float roverAngle);  //Chooses Random Theta
   Point ChooseRandomPoint();                  //Creates a random point to search around
@@ -69,9 +70,8 @@ private:
   void ResetSearchState();
   
   Point Turn180();                            //Turns rover around 180 degrees
-  void  SetBoarderValues(float initTheta);    //Sets up boarder values.
-  bool  IsWithinBoundary(Point searchPoint);  //Checks if the searchPoint. 
-
+  void  SetBoarderValues();                   //Sets up boarder values.
+  bool  IsWithinBoundary(Point searchPoint);  //Checks if the searchPoint is valid
 };
 
 #endif /* SEARCH_CONTROLLER */
