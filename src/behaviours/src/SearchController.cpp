@@ -70,7 +70,6 @@ Result SearchController::DoWork()
   }
 
   //searchLocation declaration in .h
-
   result.type = waypoint;
   Point destination;
 
@@ -79,95 +78,13 @@ Result SearchController::DoWork()
   {
     first_waypoint = false;
     SetBoarderValues();
-  
-    // while(!valid)
-    // {
-      // if(!useY)
-      // {
-      //   searchLocation = ChooseRandomPoint();
-      //   useY = true;
-      // }
-
-    //   cout << "Current Point X:  " << searchLocation.x << "  Current Point Y:  " << searchLocation.y << endl;
-    //   cout << "Boundary DISTANCE: " << boundary_distance << endl;
-      
-    //   if(useX)
-    //   {
-       
-    //     float checkX = centerLocation.x + boundary_distance;
-    //     cout << "Can't go past on X: " << checkX << endl;
-
-
-    //     if(boundary_distance < 0)
-    //     {
-    //       if(searchLocation.x < checkX)
-    //       {
-    //         cout << "NOT A VALID POINT" << endl;
-    //         valid = false;
-    //       }
-    //       else
-    //       {
-    //         cout << "VALID POINT" << endl;
-    //         valid = true;
-    //       }
-    //     }
-    //     else if(boundary_distance > 0)
-    //     {
-    //       if(searchLocation.x > checkX)
-    //       {
-    //         cout << "NOT A VALID POINT" << endl;
-    //         valid = false;
-    //       }
-    //       else
-    //       {
-    //         cout << "VALID POINT" << endl;
-    //         valid = true;
-    //       }
-
-    //     }
-
-    //   }
-    //   else
-    //   {
-    //     float checkY = centerLocation.y + boundary_distance;
-    //     cout << "Can't go past on Y: " << checkY << endl;
-
-    //     if(boundary_distance < 0)
-    //     {
-    //       if(searchLocation.y < checkY)
-    //       {
-    //         cout << "NOT A VALID POINT" << endl;
-    //       }
-    //       else
-    //       {
-    //         cout << "VALID POINT" << endl;
-    //       }
-    //     }
-    //     else if(boundary_distance > 0)
-    //     {
-    //       if(searchLocation.y > checkY)
-    //       {
-    //         cout << "NOT A VALID POINT" << endl;
-    //       }
-    //       else
-    //       {
-    //         cout << "VALID POINT" << endl;
-    //       }
-    //     }
-    //   }
-    // }
-  // }
 
     destination = Turn180();
-    //destination = currentLocation;
-
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), destination);
 
     return result;
   }
-  
-
 
   /*
    * Performs a 2 stage search.
@@ -179,7 +96,6 @@ Result SearchController::DoWork()
    * 4.) Go back to step 1
   */
 
-
   //If Rover had picked up a cube during the search
   if(succesfullPickup)
   {
@@ -190,14 +106,14 @@ Result SearchController::DoWork()
     if(positionInSearch > 1)
     {
       cout << "Interrupted while doing the octagon search, going back on point" << endl;
-      positionInSearch--;                   //go back one position in the octagon
+      positionInSearch--;           //go back one position in the octagon
     }
 
     // Otherwise rover was driving to first point
     else
     {
       cout << "Interrupted going to first point in octagon, heading back to searchLocation to start pattern again" << endl;
-      destination = searchLocation;         //go back to the searchLocation
+      destination = searchLocation;  //go back to the searchLocation
       hasStartedPattern = false;     //reset hasStartedPattern (Just In Case)
       positionInSearch = 0;          //reset positionInSearch back to 0
     }
@@ -220,9 +136,6 @@ Result SearchController::DoWork()
   else if(!hasSearchPoint)  //if we have finished/don't currently have/need a new search area make one
   {
     cout << "Doesn't have search area, generating one" << endl;
-    // do{
-    //     searchLocation = ChooseRandomPoint();
-    // }while(!IsWithinBoundary(searchLocation));
     searchLocation = ChooseRandomPoint();
     destination = searchLocation;
   }
@@ -240,11 +153,6 @@ Result SearchController::DoWork()
   {
     attemptCount = 0;
   }
-
-
-  // cout << ">>> DESTINATION: " << destination.x << ", " << destination.y << endl;
-  // destination.x = 4.98511;
-  // destination.y = -2.71179;
 
   //find appropriate theta using robots current position and the position recently generated
   // destination.theta = atan2((destination.y - currentLocation.y), (destination.x - currentLocation.x));
@@ -270,7 +178,6 @@ void SearchController::SetInterrupted(bool centerSeen)
       if(!hasStartedPattern)
       {
         //Assume we are trying to drive through the center
-
         //Force Rover to Generate new Search Point
         hasSearchPoint = false;
       }
@@ -520,35 +427,18 @@ Point SearchController::Turn180()
 
   temp.theta = currentLocation.theta + M_PI;
   temp.x = currentLocation.x + (0.5 * cos(temp.theta));
-  temp.y = currentLocation.y + (0.5 * sin(temp.theta));  //Q4:  0 to pi/2
-  //Q3:  pi/2 to pi
-  //Q2:  pi to 3pi/2
-  //Q1:  3pi/2 to 2pi
+  temp.y = currentLocation.y + (0.5 * sin(temp.theta));  
+
   return temp;
 }
 
 void SearchController::SetBoarderValues()
 {
 
-    /* Rover position on odom map
-                   (Pi/2) 
-                     N
-                     ^
-            (-,+)    |     (+,+)
-                     R2
-        (pi) E< R1 __center__R3 >W (0)
-                     |
-            (-, -)   R2      (+,-)
-                     S
-    */
-
-
   //Get Current Rovers Theta
   //---------------------------------------------------------------------------------------
 
   float initTheta = angles::normalize_angle_positive(currentLocation.theta);
-  //cout << "(" << currentLocation.x << "," << currentLocation.y << ")" << endl;
-  //cout << "CALLING SetBoarderValues initTheta" << initTheta << endl;
 
   //---------------------------------------------------------------------------------------
 
@@ -639,52 +529,6 @@ void SearchController::SetBoarderValues()
     default:
       break;
   }
-
-/*
-
-    //Rover 1: initial theta range (pi/4, 7pi/4)
-    //if range is satisfied sets useY boundary value to true
-  //cout << "range (" << M_PI/4 << "," << 7*M_PI/4  << ")"<< endl;
-    if(initTheta > 0 && initTheta < M_PI/4 || initTheta > 7*M_PI/4  && initTheta < 2*M_PI) //because X = 0 angle coulde be 0 radians or 2pi
-    {
-        useX = false;
-        useY = true;
-    //cout << "range (pi/4, 7pi/5)" << endl;
-    }
-
-    //Rover 2: initial theta range (pi/4, 3pi/4)
-    //if range is satisfied sets useX boundary value to true
-  //cout << "range (" << M_PI/4 << "," << 3*M_PI/4 << ")" << endl;
-    if(initTheta > M_PI/4 && initTheta < 3*M_PI/4)
-        //initTheta > 5*M_PI/4 && initTheta < 3*M_PI/2 || initTheta > 3*M_PI/2 && initTheta < 7*M_PI/4)
-    {
-        useX = true;
-        useY = false;
-    //cout << "range (pi/4, 3pi/4)" << endl;
-    }
-
-    //Rover 2: initial theta range (5pi/4, 7pi/4)
-    //if range is satisfied sets useX boundary value to true
-    //cout << "range (" << 5*M_PI/4 << "," << 7*M_PI/4 << ")" << endl;
-    if(initTheta > 5*M_PI/4 && initTheta < 7*M_PI/4)
-    {
-        useX = true;
-        useY = false;
-    //cout << "range (5pi/4, 7pi/4)" << endl;
-    }
-
-    //Rover 3: initial theta range (3pi/4 , 5pi/4)
-    //if range is satisfied sets useX and useY value to true
-  //cout << "range (" << 3*M_PI/4 << "," << 5*M_PI/4 << ")" << endl;
-    //if(initTheta > 3*M_PI/4 && initTheta < M_PI || initTheta > M_PI && initTheta < 5*M_PI/4)
-    if(initTheta > 3*M_PI/4 && initTheta < 5*M_PI/4)
-    {
-        useX = true;
-        useY = true;
-    //cout << "range (3pi/4 , 5pi/4)" << endl;
-    }
-
-  */
 }
 
 bool SearchController::IsWithinBoundary(Point searchPoint)
@@ -763,53 +607,6 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
     }
 
   return valid;
-
-    // Point centerPoint;
-
-    // cout << "CHECKING IsWithinBoundary" << endl;
-
-    // //Rover 1 case:
-    // if(useY && !useX)
-    // {
-    //     cout << "case 2 Y = -1" << endl;
-    //     centerPoint.y = centerLocation.y - 1;
-    //     cout << " centerPointY: " << centerPoint.y << "searchPointY:" << searchPoint.y << endl;
-    //     if(searchPoint.y < centerPoint.y)
-    //     {
-    //         cout << "Not in bound" << endl;
-    //         return false;
-    //     }
-    // }
-
-    // //Rover 2 case: 
-    // else if(useX && !useY)
-    // {
-    //     cout << "case 1 X = 1" << endl;
-    //     centerPoint.x = centerLocation.x + 1;
-    //     cout << " centerPointX: " << centerPoint.x << "searchPointX:" << searchPoint.x << endl;
-    //     if(searchPoint.x > centerPoint.x)
-    //     {
-    //         cout << "Not in bound" << endl;
-    //         return false;
-    //     }
-    // }
-
-    // //Rover 3 case:
-    // else if(useX && useY)
-    // {
-    //     cout << "case 3 X = -1, Y = 1" << endl;
-    //     centerPoint.x = centerLocation.x - 1;
-    //     centerPoint.y = centerLocation.y + 1;
-    //     cout << " centerPointX: " << centerPoint.x << "searchPointX:" << searchPoint.x << endl;
-    //     cout << " centerPointY: " << centerPoint.y << "searchPointY:" << searchPoint.y << endl;
-    //     if(searchPoint.x < centerPoint.x || searchPoint.y > centerPoint.y)
-    //     {
-    //         cout << "Not in bound" << endl;
-    //         return false;
-    //     }
-    // }
-
-    // return true;
 }
 
 void SearchController::ProcessData() { }

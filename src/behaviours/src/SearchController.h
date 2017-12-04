@@ -58,9 +58,8 @@ private:
   int positionInSearch;   //keeps track of current position inside the fixed octagon position
   int numTimesExceeded;   //Holds the number of times searchcontroller has attempted to go to a point and exceeded its trial attempts.
 
-  //Flag for which x-axis or y-axis boarder line restriction
-  bool useX = false;
-  bool useY = false;
+  
+  bool useX = false;         //Flag for which x-axis or y-axis boarder line restriction
   bool isValid = false;
   int boundary_distance = 1;
 
@@ -71,7 +70,7 @@ private:
   void ResetSearchState();
   
   Point Turn180();                            //Turns rover around 180 degrees
-  void  SetBoarderValues();    //Sets up boarder values.
+  void  SetBoarderValues();                   //Sets up boarder values.
   bool  IsWithinBoundary(Point searchPoint);  //Checks if the searchPoint. 
 };
 
