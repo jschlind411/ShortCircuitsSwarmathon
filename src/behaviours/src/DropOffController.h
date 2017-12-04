@@ -55,7 +55,7 @@ private:
   long int nestTimer; //Timer used for nest behavior
   const float K_angular = 1.0; //radians a second
   const float nestVelocity = 0.3;
-  const float nestWalkThreshold = 1.5;
+  const float nestWalkThreshold = 0.75;
 
   // End George Values
 
@@ -66,7 +66,7 @@ private:
 
   const float cameraOffsetCorrection = 0.020; //meters
   const float centeringTurnRate = 0.15; //radians
-  const int centerTagThreshold = 8;
+  const int centerTagThreshold = 10;
   const int lostCenterCutoff = 4; //seconds before giving up on drop off beacuse center cannot be seen anymore
   const float collectionPointVisualDistance = 0.2; //in meters
   const float initialSpinSize = 0.05; //in meters aka 10cm

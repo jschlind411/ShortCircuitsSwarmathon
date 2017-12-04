@@ -32,12 +32,10 @@ DropOffController::~DropOffController() {
 bool DropOffController::IsAtNest() {
   int numBlocks = countLeft + countRight;
   cout << ">>>>>>>>>>>>>>>>> NUMBLOCKS: " << numBlocks << endl;
-  if (numBlocks > centerTagThreshold) {
+  if ((numBlocks > centerTagThreshold) || (atNest == true)) {
     atNest = true;
     reachedCollectionPoint = true;
-  } else {
-    atNest = false;
-  }
+  } 
   return atNest;
 }
 
@@ -160,10 +158,13 @@ void DropOffController::FlushController() {
 }
 
 bool DropOffController::ShouldGoBackHome() {
+  cout << ">>>>>>>>> Should go back?" << endl;
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
   if ((distanceToCenter > collectionPointVisualDistance) && timerTimeElapsed < 0 && targetHeld ){
+    cout << ">>>>>>>>> yes" << endl;
     return true;
   }
+  cout << ">>>>>>>>> no?" << endl;
   return false;
 }
 
@@ -186,6 +187,7 @@ void DropOffController::RunNestTimer() {
     return;
   }
 
+  cout << ">>>>>> Increment nest timer" << endl;
   // Otherwise increment the timer
   long int elapsed = current_time - returnTimer;
   nestTimer = elapsed/1e3; // Convert from milliseconds to seconds
@@ -193,7 +195,7 @@ void DropOffController::RunNestTimer() {
 }
 
 void DropOffController::CheckIfLeftNest() {
-  if (nestTimer > -nestWalkThreshold) {
+  if (nestTimer > 2*nestWalkThreshold) {
     finalInterrupt = true;
   }
 }
@@ -209,9 +211,6 @@ Result DropOffController::DoWork() {
   cout << ">>>>>>>>>>>>>>>>>>>> DropOffController" << endl;
   cout << ">>>>>>>>>>>>>>>>>>>> timerTimeElapsed: " << timerTimeElapsed << endl;
   
-  FlushController();
-  return result;
-
   if (!runDefault){
   // Check if we should still be doing work
   if (finalInterrupt) {
@@ -231,9 +230,9 @@ Result DropOffController::DoWork() {
     SetDestinationNest();
     return result;
   } else if (IsAtNest()) {
-    
     cout << ">>>>>>>>>>>> IS AT NEST" << endl;
     if (isCentered()) {
+      cout << ">>>>>>>>>>>>> isCentered. Should run, drop, and backout" << endl;
       RunNestTimer();
       DropAndLeave();
       CheckIfLeftNest();
@@ -635,9 +634,6 @@ bool DropOffController::ShouldInterrupt() {
 }
 
 bool DropOffController::HasWork() {
-  cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> HAS WORK?" << endl;
-  cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> startWaypoint: " << startWaypoint << "\tisPrecisionDriving: " << isPrecisionDriving <<endl;
-
   if(timerTimeElapsed > -1) {
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
