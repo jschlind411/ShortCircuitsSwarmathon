@@ -90,7 +90,7 @@ Result SearchController::DoWork()
    * Performs a 2 stage search.
    * (Checks to see if it was interrupted during any process)
    *
-   * 1.) It will generate a random point to drive to
+   * 1.) It will generate a random point to drive to that is within its assigned boundary
    * 2.) Do an octagon pattern around the generated point once it arrives
    * 3.) Return back to the center once it has finished the pattern
    * 4.) Go back to step 1
@@ -201,6 +201,16 @@ float SearchController::ChooseRandomTheta(float roverAngle)
   return newAngle;
 }
 
+/*
+ * Generates rover's next random point that is within boundary rover is assigned to at initial start
+ * and return it.
+ * 1) Will continue to run while loop if the random point generated is not in the boundary 
+ *    rover is assigned with boolean isValid.
+ * 2) It does boundary checking using IsWithinBoundary.
+ * 3) If the rover is within its boundary while loop stops generating new randomPoints and booleans 
+      hasSearchPoint and returning is modified to reset that current rover has a new search location and it is not
+      returning to the collectionZone.
+ */
 Point SearchController::ChooseRandomPoint()
 {
 
@@ -240,11 +250,10 @@ Point SearchController::ChooseRandomPoint()
   return temp;
 }
 
-/**
-  * Generates various search patterns for testing
-  * currently experiment with octagons.
-  **/
-
+/*
+ * Generates various search patterns for testing
+ * currently experiment with octagons.
+ */
 
 //GENDELIBERATEPOINT is a method that is called when the rover is in the process of doing a fixed pattern search.  Currently implements an octagonal pattern centered around the
 //randomly generated searchpoint
@@ -432,6 +441,14 @@ Point SearchController::Turn180()
   return temp;
 }
 
+/*
+ * Sets up the boarder base on the initial theta robot faces after startup.
+ * 1) Get the current inital theta as a positive value.
+ * 2) Define the float angle constants for radian values reference.
+ * 3) Initialize the quadrant rover is placed in based on the initial angle.
+ * 4) Establish the direction the border is drawn and boundary offset base
+ *    on rover's quadrant by setting useX boolean and boundary_distance float
+ */
 void SearchController::SetBoarderValues()
 {
 
@@ -531,6 +548,14 @@ void SearchController::SetBoarderValues()
   }
 }
 
+/*
+ * Validates if the searchPoint given is valid in the x and y . 
+ * 1) Verify which orientation X or Y is the boundary drawn for given robot with searchPoint.
+ * 2) Calculates the boundary limit point base on boolean useX.
+ * 3) Checks of the boundary_distance is positve or negative.
+ * 4) Checks of the searchPoint.x or y exceeds limit
+ * 5) Sets boolean valid if the searchPoint is valid and return boolean.
+ */
 bool SearchController::IsWithinBoundary(Point searchPoint)
 {
     bool valid = false;
