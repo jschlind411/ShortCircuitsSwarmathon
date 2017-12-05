@@ -50,7 +50,7 @@ private:
   const float reactivate_center_sonar_threshold = 0.8;
   const int targetCountPivot = 6;
   const float obstacleDistancePivot = 0.2526;
-  const float triggerDistance = 0.65;
+  const float triggerDistance = 0.0;
 
   /*
      * Member variables

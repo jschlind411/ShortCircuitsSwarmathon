@@ -86,6 +86,44 @@ Result SearchController::DoWork()
     return result;
   }
 
+  string s;
+
+  if(hasSearchPoint)
+  {
+    s = "true";
+  }
+  else
+  {
+      s = "false";
+  }
+
+  cout << "Search Point = " << s <<  endl;
+
+  if(returning)
+  {
+    s = "true";
+  }
+  else
+  {
+      s = "false";
+  }
+
+  cout << "returning = " << s <<  endl;
+
+  result.wpts.waypoints.clear();
+
+  if(result.wpts.waypoints.size() == 0)
+  {
+      s = "is empty ";
+  }
+  else
+  {
+      s = "is not emmpty ";
+  }
+
+  cout << "waypoints list " << s << endl;
+
+
   /*
    * Performs a 2 stage search.
    * (Checks to see if it was interrupted during any process)
