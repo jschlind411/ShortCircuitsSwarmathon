@@ -30,28 +30,16 @@ DropOffController::~DropOffController() {
 }
 
 bool DropOffController::IsAtNest() {
+  if (atNest == true) return true;
+
   int numBlocks = countLeft + countRight;
   cout << ">>>>>>>>>>>>>>>>> NUMBLOCKS: " << numBlocks << endl;
   if ((numBlocks > centerTagThreshold) || (atNest == true)) {
+    cout << ">>>>>>>> STATES THAT WE ARE AT NEST " << endl;
     atNest = true;
     reachedCollectionPoint = true;
   } 
   return atNest;
-}
-
-bool DropOffController::TimeToDrop() {
-  // timerTimeElapsed starts when robot starts going home
-  if (timerTimeElapsed >= 0.1) {
-    return true;
-  }
-  return false;
-}
-
-bool DropOffController::TimeFinishedBackingOut() {
-  if (timerTimeElapsed >= 5.0) {
-    return true;
-  }
-  return false;
 }
 
 void DropOffController::DropAndLeave() {
@@ -68,10 +56,10 @@ void DropOffController::DropAndLeave() {
      // Drop block
     result.fingerAngle = M_PI_2; //open fingers
     result.wristAngle = 0; //raise wrist
-    targetHeld = false;
+    // targetHeld = false;
     cout << "Dropped Target" << endl;
     // Set robot to leave
-    result.pd.cmdVel = -nestVelocity;
+    result.pd.cmdVel = -0.3;
   } else {
     result.pd.cmdVel = nestVelocity;
   }
@@ -103,25 +91,9 @@ bool DropOffController::isCentered() {
   return true;
 }
 
-void DropOffController::GoToNest(){
-  result.type = waypoint;
-  result.wpts.waypoints.clear();
-  result.wpts.waypoints.push_back(this->centerLocation);
-  startWaypoint = false;
-  isPrecisionDriving = false;
-
-  timerTimeElapsed = 0;
-}
-
-bool DropOffController::AmILost() {
-  if (timerTimeElapsed > maxDropOffTime) {
-    return true;
-  }
-  return false;
-}
-
 void DropOffController::SearchForNest() {
   Point nextSpinPoint;
+  isSearching = true;
 
   //sets a goal that is 60cm from the centerLocation and spinner
   //radians counterclockwise from being purly along the x-axis.
@@ -148,10 +120,12 @@ void DropOffController::SearchForNest() {
 }
 
 void DropOffController::FlushController() {
-  finalInterrupt = true;
-  targetHeld = false;
-  reachedCollectionPoint = true;
-  isPrecisionDriving = false;
+  result.wpts.waypoints.clear();
+  // isPrecisionDriving = false;
+  // startWaypoint = false;
+  // finalInterrupt = true;
+  // targetHeld = false;
+  // reachedCollectionPoint = true;
   result.type = behavior;
   result.b = nextProcess;
   result.reset = true;
@@ -164,7 +138,7 @@ bool DropOffController::ShouldGoBackHome() {
     cout << ">>>>>>>>> yes" << endl;
     return true;
   }
-  cout << ">>>>>>>>> no?" << endl;
+  cout << ">>>>>>>>> no" << endl;
   return false;
 }
 
@@ -183,21 +157,39 @@ void DropOffController::RunNestTimer() {
   // Start nest timer if not already
   if (nestTimer < 0) {
     nestTimer = 0;
-    returnTimer = current_time;
-    return;
-  }
-
-  cout << ">>>>>> Increment nest timer" << endl;
-  // Otherwise increment the timer
-  long int elapsed = current_time - returnTimer;
-  nestTimer = elapsed/1e3; // Convert from milliseconds to seconds
-
+    // nestTimeStamp = timerTimeElapsed;
+  } else {
+    cout << ">>>>>> Increment nest timer" << endl;
+    cout << ">>>>>> before nestTimer: " << nestTimer << endl;
+    // Otherwise increment the timer
+    nestTimer ++;
+    // nestTimer = timerTimeElapsed; // Convert from milliseconds to seconds
+    cout << ">>>>>> after nestTimer: " << nestTimer << endl;
+  } 
 }
 
 void DropOffController::CheckIfLeftNest() {
-  if (nestTimer > 2*nestWalkThreshold) {
+  cout << ">>>>>>>>>>>>>>>>>>. nestTimer: " << nestTimer << endl;
+  if (nestTimer > 60) {
     finalInterrupt = true;
   }
+}
+
+void DropOffController::ReturnToCenter() {
+  reachedCollectionPoint = false;
+  seenEnoughCenterTags = false;
+  centerApproach = false;
+
+  result.type = waypoint;
+  result.wpts.waypoints.push_back(this->centerLocation);
+  if (isPrecisionDriving) {
+    result.type = behavior;
+    result.b = prevProcess;
+    result.reset = false;
+  }
+  isPrecisionDriving = false;
+  interrupt = false;
+  precisionInterrupt = false;
 }
 
 /**
@@ -206,14 +198,18 @@ void DropOffController::CheckIfLeftNest() {
  * drop the block inside of the nest
  * search for the nest if the nest is not found
 */
-Result DropOffController::DoWork() {
+Result DropOffController::DoWork() 
+{
   bool runDefault = false;
   cout << ">>>>>>>>>>>>>>>>>>>> DropOffController" << endl;
   cout << ">>>>>>>>>>>>>>>>>>>> timerTimeElapsed: " << timerTimeElapsed << endl;
-  
-  if (!runDefault){
+
+  // This if statement is just for debugging and is purposly out of formatting order  
+  if (!runDefault)
+  {
   // Check if we should still be doing work
-  if (finalInterrupt) {
+  if (finalInterrupt) 
+  {
     cout << "Flushing Controller" << endl;
     FlushController();
     return result;
@@ -225,95 +221,41 @@ Result DropOffController::DoWork() {
   //    * If I haven't set drop off point
   //    * Else (If I have started my drop off) check to see if we are lost
 
-  if (ShouldGoBackHome()) {
+  if (ShouldGoBackHome()) 
+  {
     cout << ">>>>>>>>>>>> setting SetDestinationNest" << endl;
     SetDestinationNest();
     return result;
-  } else if (IsAtNest()) {
+  } 
+  else if (IsAtNest()) 
+  {
     cout << ">>>>>>>>>>>> IS AT NEST" << endl;
-    if (isCentered()) {
+    if (isCentered()) 
+    {
       cout << ">>>>>>>>>>>>> isCentered. Should run, drop, and backout" << endl;
       RunNestTimer();
       DropAndLeave();
       CheckIfLeftNest();
-    } else {
+    } 
+    else 
+    {
       CenterRobot();
     }
-    return result;
-
-  }
-  return result;
-
-  // DropOffController will sleep
-  // When awakend DropOffController should ask
-  //  - Am I at the drop off area now?
-  //    * If I am at drop off
-  //      > Start precision driving and drop off object
-  //    * If I am not at drop off
-  //      > Am I lost?
-
-  // Take care of some housekeeping things
-/*
-  if(timerTimeElapsed > -1) {
-    cout << ">>>>>>>>>>>>>>>>>>>>>>> TIMER RUNNING" << endl;
-    long int elapsed = current_time - returnTimer;
-    timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
-    returnTimer = current_time;
-  }
-
-  // Nest Behavior
-  if(IsAtNest())
-  {
-    cout << "Is at nest" << endl;
-    if (TimeFinishedBackingOut()) {
-      finalInterrupt = true;
-    } else if (TimeToDrop() && isCentered()){
-      cout << ">>>>>>> DROPPING AND LEAVING >>>>>>>>" << endl;
-      DropAndLeave();
-    } else {
-      cout << "Centering Robot" << endl;
-      CenterRobot();
-    }
-    return result;
-  }
-  // else if (AmILost()) {
-  //   cout << "Searching for nest" << endl;
-  //   SearchForNest();
-  // } else {
-  //   cout << "Going to nest" << endl;
-  //   GoToNest();
-  // }
-
-  int count = countLeft + countRight;
-  double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
-  //check to see if we are driving to the center location or if we need to drive in a circle and look.
-  if ((distanceToCenter > collectionPointVisualDistance) && (!circularCenterSearching) && (count == 0)) {
-    result.type = waypoint;
-    result.wpts.waypoints.clear();
-    result.wpts.waypoints.push_back(this->centerLocation);
-    startWaypoint = false;
-    isPrecisionDriving = false;
-
-    timerTimeElapsed = 0;
 
     return result;
+
   } 
-
-  return result;
-  // END NEW CODE
-  // ###########################################
-  */
+  else if ((timerTimeElapsed > maxDropOffTime) || isSearching) 
+  {
+    SearchForNest();
+    // if (timerTimeElapsed > 2*maxDropOffTime) {
+    //   finalInterrupt = true;
+    //   ReturnToCenter();
+    // }
   }
 
-
-
-
-
-
-
-
-
-
+  return result;
+  }
 
 
   // DEFAULT CODE
@@ -549,6 +491,8 @@ void DropOffController::Reset() {
   // George Begin
   atNest = false;
   nestTimer = -1;
+  nestTimeStamp = -1;
+  isSearching = false;
   // George End
 
   result.type = behavior;
@@ -578,13 +522,14 @@ void DropOffController::Reset() {
   targetHeld = false;
   startWaypoint = false;
   first_center = true;
-  cout << "6" << endl;
+  cout << "Finished reseting DropOffController variables." << endl;
 
 }
 
 void DropOffController::SetTargetData(vector<Tag> tags) {
   countRight = 0;
   countLeft = 0;
+
 
   if(targetHeld) {
     // if a target is detected and we are looking for center tags
@@ -601,10 +546,13 @@ void DropOffController::SetTargetData(vector<Tag> tags) {
           } else {
             countLeft++;
           }
+        } else {
+          cout << "not 256 instead: " << tags[i].getID() << endl;
         }
       }
     }
   }
+  cout << ">>>>>> counting tags, left: " << countLeft << "\tright: " << countRight << endl;
 
 }
 

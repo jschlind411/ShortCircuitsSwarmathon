@@ -34,28 +34,27 @@ public:
 private:
   // Begin George Values
   bool IsAtNest();
-  bool TimeToDrop();
   bool isCentered();
-  bool ReadyToDrop();
-  bool AmILost();
   bool TimeFinishedBackingOut();
   void DropAndLeave();
   void CenterRobot();
   void SearchForNest();
-  void GoToNest();
   void FlushController();
 
   bool ShouldGoBackHome();
   void SetDestinationNest();
   void RunNestTimer();
   void CheckIfLeftNest();
+  void ReturnToCenter();
 
   bool atNest;
   bool maxDropOffTime = 15;
+  bool isSearching = false;
   long int nestTimer; //Timer used for nest behavior
+  long int nestTimeStamp = -1; // Time when we dropped off the block
   const float K_angular = 1.0; //radians a second
-  const float nestVelocity = 0.3;
-  const float nestWalkThreshold = 0.75;
+  const float nestVelocity = 0.1;
+  const float nestWalkThreshold = 12; //command steps
 
   // End George Values
 
@@ -66,7 +65,7 @@ private:
 
   const float cameraOffsetCorrection = 0.020; //meters
   const float centeringTurnRate = 0.15; //radians
-  const int centerTagThreshold = 10;
+  const int centerTagThreshold = 6;
   const int lostCenterCutoff = 4; //seconds before giving up on drop off beacuse center cannot be seen anymore
   const float collectionPointVisualDistance = 0.2; //in meters
   const float initialSpinSize = 0.05; //in meters aka 10cm
