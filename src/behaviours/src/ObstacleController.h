@@ -3,6 +3,7 @@
 
 #include "Controller.h"
 #include "Tag.h"
+#include <random_numbers/random_numbers.h>
 
 class ObstacleController : virtual Controller
 {
@@ -49,7 +50,7 @@ private:
   const float reactivate_center_sonar_threshold = 0.8;
   const int targetCountPivot = 6;
   const float obstacleDistancePivot = 0.2526;
-  const float triggerDistance = 0.8;
+  const float triggerDistance = 0.65;
 
   /*
      * Member variables
@@ -82,9 +83,14 @@ private:
 
   bool phys = false; // Physical obstacle
   bool collection_zone_seen = false; // The obstacle is the collection zone
+  bool center_was_seen = false;
+  float coin_flip_for_direction = 0;
+  bool first_time_obstacle = true;
   
   bool set_waypoint = false;
   bool can_set_waypoint = false;
+
+  void FlipForDirection();
 
   float camera_offset_correction = 0.020; //meters;
 

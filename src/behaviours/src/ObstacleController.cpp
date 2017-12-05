@@ -24,21 +24,21 @@ void ObstacleController::avoidObstacle()
   // If obstacle is too close, move to the direction least obstructed
   if (right < 0.8 || center < 0.8 || left < 0.8) 
   {
-    
-    // Figure out which way is probably is best to turn
-    float bestSide = std::max({right,center,left}, [](const float& s1, const float& s2) { return s1 < s2; });
 
-    if (bestSide == left)
+    //Georges Implementation of random choice theory for turning to avoid obstacle:  George Gets Credit
+    if(coin_flip_for_direction <= .5)
     {
+      //turn left
       result.pd.cmdAngular = K_angular;
       cout << "turning left" << endl;
-
-    } 
-    else 
+    }
+    else
     {
+      //turn right
       result.pd.cmdAngular = -K_angular;
       cout << "turning right" << endl;
     }
+
     result.type = precisionDriving;
 
     // result.pd.cmdAngular = -K_angular;
@@ -79,11 +79,12 @@ void ObstacleController::avoidCollectionZone()
 
     result.type = precisionDriving;
 
-    cout << "Saw Center Tags:  " << total_center_tags_seen << endl;
+    cout << "Saw Center Tags:  " << total_center_tags_seen << ". now backing up!" << endl;
 
     result.pd.setPointVel = 0.0;
     result.pd.cmdVel = -0.2;
     result.pd.setPointYaw = 0;
+    center_was_seen = true;
 
 }
 
@@ -94,6 +95,12 @@ Result ObstacleController::DoWork()
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
+
+  if(first_time_obstacle)
+  {
+    first_time_obstacle = false;
+    FlipForDirection();
+  }
 
   // The obstacle is an april tag marking the collection zone
   if(collection_zone_seen)
@@ -115,10 +122,29 @@ Result ObstacleController::DoWork()
     result.type = waypoint;
     result.PIDMode = FAST_PID;
     Point forward;
-    forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
-    forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
+
+    if(center_was_seen)
+    {
+
+      center_was_seen = false;
+      forward.theta = currentLocation.theta + M_PI;
+
+      cout << currentLocation.theta << " : " << forward.theta << endl;
+
+      cout << "Setting point behind rover to drive to" << endl;
+
+    }
+    else
+    {
+      forward.theta = currentLocation.theta;
+    }
+
+    forward.x = currentLocation.x + (0.5 * cos(forward.theta));
+    forward.y = currentLocation.y + (0.5 * sin(forward.theta));
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
+
+    first_time_obstacle = true;
   }
 
   return result;
@@ -321,4 +347,17 @@ bool ObstacleController::getObstacleDetected()
 bool ObstacleController::getCollectionZoneSeen()
 {
   return collection_zone_seen;
+}
+
+void ObstacleController::FlipForDirection()
+{
+  random_numbers::RandomNumberGenerator* flip;
+  flip = new random_numbers::RandomNumberGenerator();
+
+ coin_flip_for_direction = flip->uniform01();
+
+  delete flip;
+  flip = nullptr;
+
+  cout << "Value of Coin Flip" << coin_flip_for_direction << endl;
 }

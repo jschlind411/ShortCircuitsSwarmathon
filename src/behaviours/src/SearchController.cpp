@@ -222,7 +222,7 @@ Point SearchController::ChooseRandomPoint()
   while(!isValid)
   {
     //ARENA IS 50x50
-    const int MAX_ARENA_SIZE = 4;
+    const int MAX_ARENA_SIZE = 2;
     const int MIN_SEARCH_DIST = 1;
 
     float searchDist = rng->uniformReal(MIN_SEARCH_DIST, MAX_ARENA_SIZE);
@@ -495,27 +495,27 @@ void SearchController::SetBoarderValues()
 
   if(initTheta <= (PI_4))
   {
-    cout << "I AM IN QUADRANT 1:  "  << initTheta << endl;
+//    cout << "I AM IN QUADRANT 1:  "  << initTheta << endl;
     quadrant = 1;
   }
   else if(initTheta <= (PI3_4))
   {
-    cout << "I AM IN QUADRANT 2:  " << initTheta << endl;
+//    cout << "I AM IN QUADRANT 2:  " << initTheta << endl;
     quadrant = 2;
   }
   else if(initTheta <= (PI5_4))
   {
-    cout << "I AM IN QUADRANT 3:  " << initTheta << endl;
+//    cout << "I AM IN QUADRANT 3:  " << initTheta << endl;
     quadrant = 3;
   }
   else if (initTheta <= PI7_4)
   {
-    cout << "I AM IN QUADRANT 4:  " << initTheta << endl;
+//    cout << "I AM IN QUADRANT 4:  " << initTheta << endl;
     quadrant = 4;
   }
   else
   {
-    cout << "I AM IN QUADRANT 1:  "  << initTheta << endl;
+//    cout << "I AM IN QUADRANT 1:  "  << initTheta << endl;
     quadrant = 1;
   }
 
@@ -560,25 +560,25 @@ void SearchController::SetBoarderValues()
 bool SearchController::IsWithinBoundary(Point searchPoint)
 {
     bool valid = false;
-    cout << "Current Point X:  " << searchPoint.x << "  Current Point Y:  " << searchPoint.y << endl;
-    cout << "Boundary DISTANCE: " << boundary_distance << endl;
+//    cout << "Current Point X:  " << searchPoint.x << "  Current Point Y:  " << searchPoint.y << endl;
+//    cout << "Boundary DISTANCE: " << boundary_distance << endl;
       
     if(useX)
     {
      
       float checkX = centerLocation.x + boundary_distance;
-      cout << "Can't go past on X: " << checkX << endl;
+//      cout << "Can't go past on X: " << checkX << endl;
 
       if(boundary_distance < 0)
       {
         if(searchPoint.x < checkX)
         {
-          cout << "NOT A VALID POINT" << endl;
+//          cout << "NOT A VALID POINT" << endl;
           valid = false;
         }
         else
         {
-          cout << "VALID POINT" << endl;
+//          cout << "VALID POINT" << endl;
           valid = true;
         }
       }
@@ -587,12 +587,12 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
       {
         if(searchPoint.x > checkX)
         {
-          cout << "NOT A VALID POINT" << endl;
+//          cout << "NOT A VALID POINT" << endl;
           valid = false;
         }
         else
         {
-          cout << "VALID POINT" << endl;
+//          cout << "VALID POINT" << endl;
           valid = true;
         }
       }
@@ -601,18 +601,18 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
     else
     {
       float checkY = centerLocation.y + boundary_distance;
-      cout << "Can't go past on Y: " << checkY << endl;
+//      cout << "Can't go past on Y: " << checkY << endl;
 
       if(boundary_distance < 0)
       {
         if(searchPoint.y < checkY)
         {
-          cout << "NOT A VALID POINT" << endl;
+//          cout << "NOT A VALID POINT" << endl;
           valid = false;
         }
         else
         {
-          cout << "VALID POINT" << endl;
+//          cout << "VALID POINT" << endl;
           valid = true;
         }
       }
@@ -621,12 +621,12 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
       {
         if(searchPoint.y > checkY)
         {
-          cout << "NOT A VALID POINT" << endl;
+//          cout << "NOT A VALID POINT" << endl;
           valid = false;
         }
         else
         {
-          cout << "VALID POINT" << endl;
+//          cout << "VALID POINT" << endl;
           valid = true;
         }
       }

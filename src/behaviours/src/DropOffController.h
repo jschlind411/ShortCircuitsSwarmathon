@@ -41,7 +41,7 @@ private:
   const float centeringTurnRate = 0.15; //radians
   const int centerTagThreshold = 8;
   const int lostCenterCutoff = 4; //seconds before giving up on drop off beacuse center cannot be seen anymore
-  const float collectionPointVisualDistance = 0.2; //in meters
+  const float collectionPointVisualDistance = 0.35; //in meters
   const float initialSpinSize = 0.05; //in meters aka 10cm
   const float spinSizeIncrement = 0.50; //in meters
   const float searchVelocity = 0.15; //in meters per second
@@ -119,6 +119,17 @@ private:
   bool precisionInterrupt = false;
   bool finalInterrupt = false;
   bool first_center = true;
+  bool center_seen = false;
+  bool search_for_center = false;
+
+
+  Result OldDropOffCode();
+  void FindCenter();
+
+  bool ShouldDriveHome();
+  bool LostCenter();
+
+
 
 };
 #endif // end header define
