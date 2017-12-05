@@ -34,7 +34,8 @@ bool DropOffController::IsAtNest() {
 
   int numBlocks = countLeft + countRight;
   cout << ">>>>>>>>>>>>>>>>> NUMBLOCKS: " << numBlocks << endl;
-  if ((numBlocks > centerTagThreshold) || (atNest == true)) {
+  if ((numBlocks > centerTagThreshold) || (atNest == true)) 
+  {
     cout << ">>>>>>>> STATES THAT WE ARE AT NEST " << endl;
     atNest = true;
     reachedCollectionPoint = true;
@@ -52,7 +53,8 @@ void DropOffController::DropAndLeave() {
   result.pd.cmdAngularError = 0.0;
   
   // Check if time to drop. If drop then leave. Else keep driving in.
-  if (nestTimer > nestWalkThreshold) {
+  if (nestTimer > nestWalkThreshold) 
+  {
      // Drop block
     result.fingerAngle = M_PI_2; //open fingers
     result.wristAngle = 0; //raise wrist
@@ -60,7 +62,9 @@ void DropOffController::DropAndLeave() {
     cout << "Dropped Target" << endl;
     // Set robot to leave
     result.pd.cmdVel = -0.3;
-  } else {
+  } 
+  else 
+  {
     result.pd.cmdVel = nestVelocity;
   }
 }
@@ -73,10 +77,12 @@ void DropOffController::CenterRobot() {
   isPrecisionDriving = true;
   result.type = precisionDriving;
 
-  if (countLeft > countRight) {
+  if (countLeft > countRight) 
+  {
     result.pd.cmdAngular = -K_angular/2;
   }
-  else if (countRight > countLeft){
+  else if (countRight > countLeft)
+  {
     result.pd.cmdAngular = K_angular/2; 
   }
 
@@ -106,7 +112,8 @@ void DropOffController::SearchForNest() {
   result.wpts.waypoints.push_back(nextSpinPoint);
 
   spinner += 45*(M_PI/180); //add 45 degrees in radians to spinner.
-  if (spinner > 2*M_PI) {
+  if (spinner > 2*M_PI) 
+  {
     spinner -= 2*M_PI;
   }
   spinSizeIncrease += spinSizeIncrement/8;
@@ -127,14 +134,16 @@ void DropOffController::FlushController() {
   // targetHeld = false;
   // reachedCollectionPoint = true;
   result.type = behavior;
-  result.b = nextProcess;
+  // result.b = nextProcess;
+  result.b = prevProcess;
   result.reset = true;
 }
 
 bool DropOffController::ShouldGoBackHome() {
   cout << ">>>>>>>>> Should go back?" << endl;
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
-  if ((distanceToCenter > collectionPointVisualDistance) && timerTimeElapsed < 0 && targetHeld ){
+  if ((distanceToCenter > collectionPointVisualDistance) && timerTimeElapsed < 0 && targetHeld )
+  {
     cout << ">>>>>>>>> yes" << endl;
     return true;
   }
@@ -155,10 +164,13 @@ void DropOffController::SetDestinationNest() {
 
 void DropOffController::RunNestTimer() {
   // Start nest timer if not already
-  if (nestTimer < 0) {
+  if (nestTimer < 0) 
+  {
     nestTimer = 0;
     // nestTimeStamp = timerTimeElapsed;
-  } else {
+  }
+  else 
+  {
     cout << ">>>>>> Increment nest timer" << endl;
     cout << ">>>>>> before nestTimer: " << nestTimer << endl;
     // Otherwise increment the timer
@@ -170,7 +182,8 @@ void DropOffController::RunNestTimer() {
 
 void DropOffController::CheckIfLeftNest() {
   cout << ">>>>>>>>>>>>>>>>>>. nestTimer: " << nestTimer << endl;
-  if (nestTimer > 60) {
+  if (nestTimer > 60) 
+  {
     finalInterrupt = true;
   }
 }
@@ -182,7 +195,8 @@ void DropOffController::ReturnToCenter() {
 
   result.type = waypoint;
   result.wpts.waypoints.push_back(this->centerLocation);
-  if (isPrecisionDriving) {
+  if (isPrecisionDriving) 
+  {
     result.type = behavior;
     result.b = prevProcess;
     result.reset = false;
@@ -587,9 +601,9 @@ bool DropOffController::HasWork() {
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
 
-  if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving) {
-    return false;
-  }
+  // if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving) {
+  //   return false;
+  // }
 
 
   return ((startWaypoint || isPrecisionDriving));
