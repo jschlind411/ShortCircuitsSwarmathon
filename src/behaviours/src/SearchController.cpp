@@ -143,6 +143,7 @@ Result SearchController::DoWork()
   else
   {
     attemptCount = 0;
+    numTimesExceeded = 0;
   }
 
   //find appropriate theta using robots current position and the position recently generated
@@ -230,7 +231,7 @@ Point SearchController::ChooseRandomPoint()
   while(!isValid)
   {
     //ARENA IS 50x50
-    const int MAX_ARENA_SIZE = 7;
+    const int MAX_ARENA_SIZE = 6;
     const int MIN_SEARCH_DIST = 1;
 
     float searchDist = rng->uniformReal(MIN_SEARCH_DIST, MAX_ARENA_SIZE);
