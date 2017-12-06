@@ -141,7 +141,7 @@ void DropOffController::DropAndLeave()
      // Drop block
     result.fingerAngle = M_PI_2; //open fingers
     result.wristAngle = 0; //raise wrist
-    targetHeld = false;
+    // targetHeld = false;
     cout << "Dropped Target" << endl;
     
     // Set robot to leave
@@ -157,6 +157,7 @@ void DropOffController::DropAndLeave()
   // Otherwise keep moving forward
   else 
   {
+    cout << ">>> Moving into nest" << endl;
     result.pd.cmdVel = nestVelocity;
   }
 }
@@ -224,11 +225,13 @@ void DropOffController::SignalToResetRover()
 */
 Result DropOffController::DoWork() 
 {
-  cout << ">>>>>>>>>>>>>>>>> DROP OFF CONTROLLER >>>>>>>>>>>>>>>" << endl;
+  cout << ">>>>>>>>> DROP OFF CONTROLLER >>>>>>>>>>" << endl;
   
   if (finalInterrupt)
   {
+    cout << ">>>> Flushing Controller" << endl;
     FlushController();
+    return result;
   }
 
   
