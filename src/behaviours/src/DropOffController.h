@@ -33,31 +33,34 @@ public:
 
 private:
   // Begin George Values
-  bool IsAtNest();
-  bool isCentered();
-  bool TimeFinishedBackingOut();
-  void DropAndLeave();
-  void CenterRobot();
-  void SearchForNest();
+  bool seenNest = false;
+  bool isCentered = false;
+  int nestTimer = -1;
+  int searchTimer = -1;
+  int centeringTimer = -1;
+
+  const int countThreshold = 3;
+  const int nestTagThreshold = 5;
+  const int nestWalkThreshold = 11; // 30 time steps
+  const int searchThreshold = 70; // 70 time steps
+  const int centeringThreshold = 6;
+  const float nestVelocity = 0.3;
+
+  bool IfShouldGoHome();
+  bool IsLost();
+  bool IsCentered();
+  bool SeenNest();
+
+  void SignalDoneDroppingOff();
   void FlushController();
-
-  bool ShouldGoBackHome();
-  void SetDestinationNest();
-  void RunNestTimer();
-  void CheckIfLeftNest();
-  void ReturnToCenter();
-
-  int searchCount = 0;
-  bool atNest;
-  bool maxDropOffTime = 15;
-  bool isSearching = false;
-  long int nestTimer; //Timer used for nest behavior
-  long int nestTimeStamp = -1; // Time when we dropped off the block
-  const int maxSearchTime = 50;
-  const float K_angular = 1.0; //radians a second
-  const float nestVelocity = 0.1;
-  const float nestWalkThreshold = 12; //command steps
-
+  void CenterRover();
+  void DropAndLeave();
+  void SetSeenNest(bool val);
+  void SearchForCenter();
+  void SetDestinationHome();
+  void IncrementNestTimer();
+  void IncrementSearchTimer();
+  void SignalToResetRover();
   // End George Values
 
 
