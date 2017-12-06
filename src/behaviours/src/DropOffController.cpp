@@ -25,7 +25,8 @@ DropOffController::DropOffController() {
 
 }
 
-DropOffController::~DropOffController() {
+DropOffController::~DropOffController()
+{
 
 }
 
@@ -107,7 +108,9 @@ Result DropOffController::DoWork()
     result.wpts.waypoints.push_back(nextSpinPoint);
 
     spinner += 45*(M_PI/180); //add 45 degrees in radians to spinner.
-    if (spinner > 2*M_PI) {
+
+    if (spinner > 2*M_PI)
+    {
       spinner -= 2*M_PI;
     }
     spinSizeIncrease += spinSizeIncrement/8;
@@ -259,6 +262,7 @@ Result DropOffController::DoWork()
   }
 
   return result;
+
 }
 
 void DropOffController::Reset() {
@@ -298,19 +302,26 @@ void DropOffController::SetTargetData(vector<Tag> tags)
   countRight = 0;
   countLeft = 0;
 
-  if(targetHeld) {
+  if(targetHeld)
+  {
     // if a target is detected and we are looking for center tags
-    if (tags.size() > 0 && !reachedCollectionPoint) {
+    if (tags.size() > 0 && !reachedCollectionPoint)
+    {
 
       // this loop is to get the number of center tags
-      for (int i = 0; i < tags.size(); i++) {
-        if (tags[i].getID() == 256) {
+      for (int i = 0; i < tags.size(); i++)
+      {
+        if (tags[i].getID() == 256)
+        {
 
           // checks if tag is on the right or left side of the image
-          if (tags[i].getPositionX() + cameraOffsetCorrection > 0) {
+          if (tags[i].getPositionX() + cameraOffsetCorrection > 0)
+          {
             countRight++;
 
-          } else {
+          }
+          else
+          {
             countLeft++;
           }
         }
@@ -320,61 +331,85 @@ void DropOffController::SetTargetData(vector<Tag> tags)
 
 }
 
-void DropOffController::ProcessData() {
-  if((countLeft + countRight) > 0) {
+void DropOffController::ProcessData()
+{
+  if((countLeft + countRight) > 0)
+  {
     isPrecisionDriving = true;
-  } else {
+  }
+  else
+  {
     startWaypoint = true;
   }
 }
 
-bool DropOffController::ShouldInterrupt() {
+bool DropOffController::ShouldInterrupt()
+{
   ProcessData();
-  if (startWaypoint && !interrupt) {
+  if (startWaypoint && !interrupt)
+  {
     interrupt = true;
     precisionInterrupt = false;
     return true;
   }
-  else if (isPrecisionDriving && !precisionInterrupt) {
+  else if (isPrecisionDriving && !precisionInterrupt)
+  {
     precisionInterrupt = true;
     return true;
   }
-  if (finalInterrupt) {
+  if (finalInterrupt)
+  {
     return true;
   }
 }
 
 bool DropOffController::HasWork() {
 
-  if(timerTimeElapsed > -1) {
+  if(timerTimeElapsed > -1)
+  {
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
 
-  if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving) {
+  if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving)
+  {
     return false;
   }
 
   return ((startWaypoint || isPrecisionDriving));
 }
 
-bool DropOffController::IsChangingMode() {
+bool DropOffController::IsChangingMode()
+{
   return isPrecisionDriving;
 }
 
-void DropOffController::SetCenterLocation(Point center) {
+void DropOffController::SetCenterLocation(Point center)
+{
+  float diffX = this->centerLocation.x - center.x;
+  float diffY = this->centerLocation.y - center.y;
+
+  if (!result.wpts.waypoints.empty())
+  {
+    result.wpts.waypoints.back().x -= diffX;
+    result.wpts.waypoints.back().y -= diffY;
+  }
+
   centerLocation = center;
 }
 
-void DropOffController::SetCurrentLocation(Point current) {
+void DropOffController::SetCurrentLocation(Point current)
+{
   currentLocation = current;
 }
 
-void DropOffController::SetTargetPickedUp() {
+void DropOffController::SetTargetPickedUp()
+{
   targetHeld = true;
 }
 
-void DropOffController::SetBlockBlockingUltrasound(bool blockBlock) {
+void DropOffController::SetBlockBlockingUltrasound(bool blockBlock)
+{
   targetHeld = targetHeld || blockBlock;
 }
 
