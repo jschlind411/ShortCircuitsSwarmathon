@@ -145,7 +145,7 @@ void DropOffController::DropAndLeave()
     cout << "Dropped Target" << endl;
     
     // Set robot to leave
-    result.pd.cmdVel = -0.7;
+    result.pd.cmdVel = -nestVelocity;
 
     // Check if we have left by now
     if (nestTimer > 2.5*nestWalkThreshold)
@@ -168,6 +168,7 @@ void DropOffController::CenterRover()
   isPrecisionDriving = true;
   result.type = precisionDriving;
   centeringTimer ++;
+  cout << "centering timer: " << centeringTimer << endl;
 
   cout << ">>>> Num of blocks. Left: " << countLeft << "\tRight: " << countRight << endl;
   
@@ -197,6 +198,8 @@ void DropOffController::CenterRover()
   {
     isCentered = true;
   }
+
+  cout << ">>> isCentered: " << isCentered;
 
 }
 
@@ -238,6 +241,8 @@ Result DropOffController::DoWork()
   if (SeenNest()) 
   {
     cout << ">>>> Seen Nest" << endl;
+    result.wpts.waypoints.clear();
+    startWaypoint = false;
     if (IsCentered())
     {
       cout << ">>>> Dropping and Leaving" << endl;

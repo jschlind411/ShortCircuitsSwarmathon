@@ -41,10 +41,10 @@ private:
 
   const int countThreshold = 3;
   const int nestTagThreshold = 5;
-  const int nestWalkThreshold = 11; // 30 time steps
-  const int searchThreshold = 70; // 70 time steps
+  const int nestWalkThreshold = 15;
+  const int searchThreshold = 70;
   const int centeringThreshold = 6;
-  const float nestVelocity = 0.3;
+  const float nestVelocity = 0.7;
 
   bool IfShouldGoHome();
   bool IsLost();
