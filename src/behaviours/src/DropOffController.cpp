@@ -199,8 +199,6 @@ void DropOffController::CenterRover()
     isCentered = true;
   }
 
-  cout << ">>> isCentered: " << isCentered;
-
 }
 
 void DropOffController::SignalToResetRover() 
