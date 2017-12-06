@@ -47,11 +47,13 @@ private:
   void CheckIfLeftNest();
   void ReturnToCenter();
 
+  int searchCount = 0;
   bool atNest;
   bool maxDropOffTime = 15;
   bool isSearching = false;
   long int nestTimer; //Timer used for nest behavior
   long int nestTimeStamp = -1; // Time when we dropped off the block
+  const int maxSearchTime = 50;
   const float K_angular = 1.0; //radians a second
   const float nestVelocity = 0.1;
   const float nestWalkThreshold = 12; //command steps

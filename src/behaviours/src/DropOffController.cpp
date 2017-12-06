@@ -262,10 +262,12 @@ Result DropOffController::DoWork()
   else if ((timerTimeElapsed > maxDropOffTime) || isSearching) 
   {
     SearchForNest();
-    // if (timerTimeElapsed > 2*maxDropOffTime) {
-    //   finalInterrupt = true;
-    //   ReturnToCenter();
-    // }
+    searchCount ++;
+    if (searchCount > maxSearchTime)
+    { 
+      ReturnToCenter();
+      finalInterrupt = true;
+    }
   }
 
   return result;
@@ -503,6 +505,7 @@ Result DropOffController::DoWork()
 
 void DropOffController::Reset() {
   // George Begin
+  searchCount = 0;
   atNest = false;
   nestTimer = -1;
   nestTimeStamp = -1;
