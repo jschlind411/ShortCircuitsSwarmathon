@@ -59,16 +59,24 @@ private:
   int numTimesExceeded;   //Holds the number of times searchcontroller has attempted to go to a point and exceeded its trial attempts.
 
   
-  bool useX = false;         //Flag for which x-axis or y-axis boarder line restriction
-  bool isValid = false;      //Flag for validating if search point is valid
-  int boundary_distance = 1; //Offset value for deciding a rover's boundary limits
+  bool useX = false;          //Flag for which x-axis or y-axis boarder line restriction
+  bool isValid = false;       //Flag for validating if search point is valid
+  int boundary_distance = 1;  //Offset value for deciding a rover's boundary limits
+  const int num_of_tries = 3; //Number of times to try getting to a point
 
   float ChooseRandomTheta(float roverAngle);  //Chooses Random Theta
   Point ChooseRandomPoint();                  //Creates a random point to search around
   Point GenDeliberatePoint();                 //Creates a point on the octagonal shaped fixed search pattern
-  Point InterruptedLogic();                   //Handles ALL logic for if the search controller was interrupted by obstacle
+
   void ResetSearchState();
-  
+  void PrintStatusToLog();
+
+
+  //Interrupted Logic methods
+  Point InterruptedLogic();                   //Handles ALL logic for if the search controller was interrupted by obstacle
+  bool CheckAttemptStatus();                  //Checks attempts and triggers states appropriately
+  Point FinishedDropOffLogic();               //Handles logic for what to do after rover drops off a tag
+
   Point Turn180();                            //Turns rover around 180 degrees
   void  SetBoarderValues();                   //Sets up boarder values.
   bool  IsWithinBoundary(Point searchPoint);  //Checks if the searchPoint is valid

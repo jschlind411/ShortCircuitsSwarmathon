@@ -59,15 +59,7 @@ void SearchController::SetSuccesfullPickup()
 Result SearchController::DoWork()
 {
 
-  cout << "SearchController doing work" << endl;
-
-  if (!result.wpts.waypoints.empty())
-  {
-    if (hypot(result.wpts.waypoints[0].x-currentLocation.x, result.wpts.waypoints[0].y-currentLocation.y) < 0.15)
-    {
-      attemptCount = 0;
-    }
-  }
+  cout << "In SearchController Do Work" << endl;
 
   //searchLocation declaration in .h
   result.type = waypoint;
@@ -76,6 +68,9 @@ Result SearchController::DoWork()
   //select new position 50 cm from current location
   if (first_waypoint)
   {
+
+    cout << "first time running, doing first time setup, turning 180" << endl;
+
     first_waypoint = false;
     SetBoarderValues();
 
@@ -85,43 +80,6 @@ Result SearchController::DoWork()
 
     return result;
   }
-
-  string s;
-
-  if(hasSearchPoint)
-  {
-    s = "true";
-  }
-  else
-  {
-      s = "false";
-  }
-
-  cout << "Search Point = " << s <<  endl;
-
-  if(returning)
-  {
-    s = "true";
-  }
-  else
-  {
-      s = "false";
-  }
-
-  cout << "returning = " << s <<  endl;
-
-  result.wpts.waypoints.clear();
-
-  if(result.wpts.waypoints.size() == 0)
-  {
-      s = "is empty ";
-  }
-  else
-  {
-      s = "is not emmpty ";
-  }
-
-  cout << "waypoints list " << s << endl;
 
 
   /*
@@ -138,7 +96,7 @@ Result SearchController::DoWork()
   if(succesfullPickup)
   {
     //THIS ENSURES SOME SITE FIDELITY
-    cout << "Rover had picked up a cube!" << endl;
+    cout << "In FinishedDropOffLogic" << endl;
 
     //if rover was in the octagon after the first point
     if(positionInSearch > 1)
@@ -156,13 +114,8 @@ Result SearchController::DoWork()
       positionInSearch = 0;          //reset positionInSearch back to 0
     }
 
-    succesfullPickup = false;
-
-    //to refrain from duplicate obstacle calls, seeing center or other issues after trying to drop off the cube would effect search controller
-    if(wasInterrupted)
-    {
-      wasInterrupted = false;
-    }
+    succesfullPickup = false;       //reset successfullpickup state
+    wasInterrupted = false;         //prevents duplicate obstacle calls
   }
 
   if (wasInterrupted)
@@ -205,25 +158,41 @@ Result SearchController::DoWork()
 //SetInterrupted is called whenever obstaclecontroller sees and obstacle. Tells this method if it saw the center or a physical obstacle
 void SearchController::SetInterrupted(bool centerSeen)
 {
-  //If this is the first time it has been interrupted for an obstacle (this time)
-  if(!wasInterrupted)
+
+  cout << "In SetInterrupt" << endl;
+
+  //if te rover sees the center and is returning to the nest
+  if(centerSeen && returning)
   {
-    if(centerSeen)
+    cout << "Saw center, triggering returning behavior off" << endl;
+    returning = false;
+  }
+
+  //if we have been interrupted on the way to a searchpoint by seeing the center
+  if(hasSearchPoint && centerSeen)
+  {
+    if(hasStartedPattern)
     {
-      returning = false;
+      //SAW CENTER DOING PATTERN
+      cout << "Saw center while performing pattern, setting new search point" << endl;
 
-      // if we haven't started a generating deliberate points and see the center
-      if(!hasStartedPattern)
-      {
-        //Assume we are trying to drive through the center
-        //Force Rover to Generate new Search Point
-        hasSearchPoint = false;
-      }
+      hasSearchPoint = false;       //Tells robot it does not have a search point and to generate a new one
+      positionInSearch = 0;         //Reset Position in Search to start from beginning
+    }
+    else
+    {
+      //ASSUME DRIVING THROUGH CENTER
 
+      cout << "Interrupted on the way to searchLocation, assuming driving through center" << endl;
+
+      hasSearchPoint = false;       //Tells robot it does not have a search point and to generate a new one
     }
 
-    wasInterrupted = true;
+
   }
+
+  wasInterrupted = true;
+
 }
 
 float SearchController::ChooseRandomTheta(float roverAngle)
@@ -251,6 +220,7 @@ float SearchController::ChooseRandomTheta(float roverAngle)
  */
 Point SearchController::ChooseRandomPoint()
 {
+   cout << "In ChooseRandomPoint" << endl;
 
   //create bool
   //start loop
@@ -260,7 +230,7 @@ Point SearchController::ChooseRandomPoint()
   while(!isValid)
   {
     //ARENA IS 50x50
-    const int MAX_ARENA_SIZE = 2;
+    const int MAX_ARENA_SIZE = 7;
     const int MIN_SEARCH_DIST = 1;
 
     float searchDist = rng->uniformReal(MIN_SEARCH_DIST, MAX_ARENA_SIZE);
@@ -299,6 +269,8 @@ Point SearchController::ChooseRandomPoint()
 Point SearchController::GenDeliberatePoint()
 {
   Point temp;
+
+ cout << "In GenDelPoint" << endl;
 
   float patternSize = 0.5;      //sets distance from searchPoint for octagon pattern
 
@@ -344,58 +316,53 @@ Point SearchController::GenDeliberatePoint()
 Point SearchController::InterruptedLogic()
 {
 
+  cout << "In InterruptedLogic" << endl;
+
   Point temp;
 
+  //Check Attempts
   //---------------------------------------------------------------------------------------
 
-  //CHECK ATTEMPTS
-  //DUAL STAGE CHECK:
-  // 1.)  Check to see how many times the rover has tried to get to a point
-  // 2.)  Check to see how many times the rover has exceeded its tries in step 1
-
-  const int num_of_tries = 3;
-  bool exceededAttempts = false;
-
-  attemptCount++;
-  cout << "Avoided Obstacle; Attempt #" << attemptCount << endl;
-
-  //if we have exceeded our limits of attempts (1st CHECK)
-  if(attemptCount > num_of_tries)
-  {
-    cout << "Exceeded # Attempts" << endl;
-    exceededAttempts = true;        //trigger exceeded behavior
-    numTimesExceeded++;
-    attemptCount = 0;               //RESET attempt count
-  }
+  bool exceededAttempts = CheckAttemptStatus();
 
   //If rover has failed consistantly 3 times to get anywhere (2nd CHECK)
   if(numTimesExceeded > num_of_tries)
   {
-    //JUST GO HOME!  Reset all variables
+    //JUST GO HOME!               Reset all variables
     cout << "Exceeded Attempts 3 times in a row, going back to center" << endl;
-    returning = true;
-    hasSearchPoint = false;
-    positionInSearch = 0;
-    temp = centerLocation;
+
+
+    returning = true;             //trigger go back to center behavior
+    hasSearchPoint = false;       //trigger go back to center behavior
+    positionInSearch = 0;         //reset position value to 0;
+    temp = centerLocation;        //tell rover to go home
+
+    return temp;
   }
 
   //---------------------------------------------------------------------------------------
   //BEGIN LOGIC
   //---------------------------------------------------------------------------------------
 
-  //This is the case if returning back to center after a pattern is complete or trying to drive across the center after being interrupted by obstacle
+  //if there is no current valid search point
   if(!hasSearchPoint)
   {
-    //Rover was deliberately set to generate a new point by switching hasSearchPoint to false
+    //if not returning from a search pattern rover shouldn't be seeing center
+    //if it does, hasSearchPoint will be false and returning will be false
     if(!returning)
     {
+      //DRIVING THROUGH CENTER
+
       cout << "Interrupted by seeing center, assuming driving through center.  Forcing a new Search Point to be Generated" << endl;
-      temp = ChooseRandomPoint();        //create new point
+      searchLocation = ChooseRandomPoint();        //create new search point
+      temp = searchLocation;                       //set as new point to try to acheive
     }
+
     //Rover is trying to go back to the center location
     else
     {
-      //Rover will set heading to center as it is returning
+      //DRIVING HOME
+
       cout << "Interrupted on way back to center, going back to center!" << endl;
       temp = centerLocation;         //go back to center
     }
@@ -692,4 +659,90 @@ void SearchController::ResetSearchState()
   returning = false;
   hasSearchPoint = false;
   positionInSearch = 0;
+}
+
+void SearchController::PrintStatusToLog()
+{
+  string s;
+
+  if(hasSearchPoint)
+  {
+    s = "true";
+  }
+  else
+  {
+      s = "false";
+  }
+
+  cout << "Search Point = " << s <<  endl;
+
+  if(returning)
+  {
+    s = "true";
+  }
+  else
+  {
+      s = "false";
+  }
+
+  cout << "returning = " << s <<  endl;
+
+  if(succesfullPickup)
+  {
+    s = "true";
+  }
+  else
+  {
+      s = "false";
+  }
+
+  cout << "successfullpickup = " << s <<  endl;
+
+  if(wasInterrupted)
+  {
+    s = "true";
+  }
+  else
+  {
+      s = "false";
+  }
+
+  cout << "wasInterrupted = " << s <<  endl;
+
+  if(result.wpts.waypoints.size() == 0)
+  {
+      s = "is empty ";
+  }
+  else
+  {
+      s = "is not empty ";
+  }
+
+  cout << "waypoints list " << s << endl;
+
+}
+
+bool SearchController::CheckAttemptStatus()
+{
+  //CHECK ATTEMPTS
+
+  attemptCount++;
+  cout << "Avoided Obstacle; Attempt #" << attemptCount << endl;
+
+  //if we have exceeded our limits of attempts (1st CHECK)
+  if(attemptCount > num_of_tries)
+  {
+    cout << "Exceeded # Attempts" << endl;
+    numTimesExceeded++;             //iterate times exceeded
+    attemptCount = 0;               //RESET attempt count
+
+    return true;                    //trigger exceeded behavior
+  }
+
+  return false;
+}
+
+Point SearchController::FinishedDropOffLogic()
+{
+
 }

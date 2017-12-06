@@ -123,13 +123,6 @@ private:
   bool search_for_center = false;
 
 
-  Result OldDropOffCode();
-  void FindCenter();
-
-  bool ShouldDriveHome();
-  bool LostCenter();
-
-
 
 };
 #endif // end header define
