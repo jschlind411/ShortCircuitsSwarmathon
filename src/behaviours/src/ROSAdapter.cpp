@@ -309,7 +309,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
   // Robot is in automode
   if (currentMode == 2 || currentMode == 3)
   {
-    cout << "Current X:" << currentLocation.x << "  Current Y:" << currentLocation.y << endl;
+    //cout << "Current X:" << currentLocation.x << "  Current Y:" << currentLocation.y << endl;
     humanTime();
     
     //update the time used by all the controllers
@@ -683,17 +683,17 @@ Point updateCenterLocation()
     //Update tmp
     tmp.theta = centerLocation.theta;
 
-    cout << "sees center, placing center at X:" << tmp.x << "  Y:" << tmp.y << endl;
+    //cout << "sees center, placing center at X:" << tmp.x << "  Y:" << tmp.y << endl;
   }
   else
   {
-    cout << "BEFORE transform center at X:" << centerLocationOdom.x << "  Y:" << centerLocationOdom.y << endl;
+    //cout << "BEFORE transform center at X:" << centerLocationOdom.x << "  Y:" << centerLocationOdom.y << endl;
     //Check drift and compensate
     transformMapCentertoOdom();
 
-    cout << "AFTER transform center at X:" << centerLocationOdom.x << "  Y:" << centerLocationOdom.y << endl;
+    //cout << "AFTER transform center at X:" << centerLocationOdom.x << "  Y:" << centerLocationOdom.y << endl;
 
-    cout << "assuming center is at X:" << tmp.x << "  Y:" << tmp.y << endl << endl;
+    //cout << "assuming center is at X:" << tmp.x << "  Y:" << tmp.y << endl << endl;
   }
   
   tmp.x = centerLocationOdom.x;
@@ -740,7 +740,7 @@ void transformMapCentertoOdom()
   centerLocationMapRef.x = odomPose.pose.position.x; //set centerLocation in odom frame
   centerLocationMapRef.y = odomPose.pose.position.y;
   
-  cout << "x ref : "<< centerLocationMapRef.x << " y ref : " << centerLocationMapRef.y << endl;
+  //cout << "x ref : "<< centerLocationMapRef.x << " y ref : " << centerLocationMapRef.y << endl;
   
   float xdiff = centerLocationMapRef.x - centerLocationOdom.x;
   float ydiff = centerLocationMapRef.y - centerLocationOdom.y;

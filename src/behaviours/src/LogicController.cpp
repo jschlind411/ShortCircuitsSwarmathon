@@ -344,8 +344,8 @@ void LogicController::SetCenterLocationOdom(Point centerLocationOdom)
   searchController.SetCenterLocation(centerLocationOdom);
   dropOffController.SetCenterLocation(centerLocationOdom);
 
-  cout << "inside LogicController thinks center is at X:" << centerLocationOdom.x
-       << "  Y:" << centerLocationOdom.y << endl;
+  //cout << "inside LogicController thinks center is at X:" << centerLocationOdom.x
+    //   << "  Y:" << centerLocationOdom.y << endl;
 }
 
 void LogicController::AddManualWaypoint(Point manualWaypoint, int waypoint_id)

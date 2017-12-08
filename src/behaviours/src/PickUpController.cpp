@@ -40,36 +40,36 @@ void PickUpController::SetTagData(vector<Tag> tags)
     for (int i = 0; i < tags.size(); i++)
     {
 
-      if (tags[i].getID() == 0)
+      if (tags[i].getID() == 256)
       {
+        Reset();
 
-        targetFound = true;
-
-        //absolute distance to block from camera lens
-        double test = hypot(hypot(tags[i].getPositionX(), tags[i].getPositionY()), tags[i].getPositionZ());
-
-        if (closest > test)
+        if (has_control)
         {
-          target = i;
-          closest = test;
+          cout << "pickup reset return interupt free" << endl;
+          release_control = true;
         }
+
+        return;
       }
+
       else
       {
 
-        if(tags[i].getID() == 256)
+        if(tags[i].getID() == 0)
         {
+          targetFound = true;
 
-          Reset();
+          //absolute distance to block from camera lens
+          double test = hypot(hypot(tags[i].getPositionX(), tags[i].getPositionY()), tags[i].getPositionZ());
 
-          if (has_control)
+          if (closest > test)
           {
-            cout << "pickup reset return interupt free" << endl;
-            release_control = true;
+            target = i;
+            closest = test;
           }
-
-          return;
         }
+
       }
     }
 

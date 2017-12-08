@@ -299,7 +299,7 @@ Result DropOffController::DoWork()
   if (finalInterrupt)
   { 
     result.type = behavior;
-    result.b = nextProcess;
+    result.b = prevProcess;
     result.reset = true;
     return result;
   }
@@ -460,7 +460,9 @@ Result DropOffController::DoWork()
       {
         // turn right slowly
         cout << "turning right slowly" << endl;
-        PrecisionRotate(0.15);
+
+        result.pd.cmdVel = 0.15;
+        result.pd.cmdAngularError = -0.15;
       }
 
       // If too many on right, turn left
@@ -468,7 +470,10 @@ Result DropOffController::DoWork()
       {
         // turn left slowly
         cout << "turning left slowly" << endl;
-        PrecisionRotate(-0.15);
+
+        result.pd.cmdVel = 0.15;
+        result.pd.cmdAngularError = 0.15;
+
       }
       else
       {
