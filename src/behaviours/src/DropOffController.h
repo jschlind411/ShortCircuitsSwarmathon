@@ -43,6 +43,7 @@ private:
   bool shouldCenter = false;
   bool shouldDrop = false;
   bool shouldLeave = false;
+  bool driveForward = false;
   int lastCountRight = 0;
   int lastCountLeft = 0;
   long int timestamp;
@@ -57,7 +58,6 @@ private:
   bool seenNest = false;
   bool isCentered = false;
   bool first_time = true;
-  bool driveForward = false;
   int nestTimer = -1;
   int searchTimer = -1;
   int centeringTimer = -1;

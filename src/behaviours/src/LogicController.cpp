@@ -191,6 +191,8 @@ void LogicController::ProcessData()
   //this controller priority is used when searching
   if (processState == PROCCESS_STATE_SEARCHING) 
   {
+
+    cout << "search state" << endl;
     prioritizedControllers = {
       PrioritizedController{0, (Controller*)(&searchController)},
       PrioritizedController{10, (Controller*)(&obstacleController)},
@@ -204,6 +206,8 @@ void LogicController::ProcessData()
   //this priority is used when returning a target to the center collection zone
   else if (processState  == PROCCESS_STATE_TARGET_PICKEDUP) 
   {
+    cout << "pickup state" << endl;
+
     prioritizedControllers = {
     PrioritizedController{-1, (Controller*)(&searchController)},
     PrioritizedController{15, (Controller*)(&obstacleController)},
@@ -216,6 +220,7 @@ void LogicController::ProcessData()
   //this priority is used when returning a target to the center collection zone
   else if (processState  == PROCCESS_STATE_DROP_OFF)
   {
+    cout << "dropoff state" << endl;
     prioritizedControllers = {
       PrioritizedController{-1, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&obstacleController)},
@@ -225,7 +230,9 @@ void LogicController::ProcessData()
       PrioritizedController{-1, (Controller*)(&manualWaypointController)}
     };
   }
-  else if (processState == PROCESS_STATE_MANUAL) {
+  else if (processState == PROCESS_STATE_MANUAL) 
+  {
+    cout << "manual state" << endl;
     prioritizedControllers = {
       PrioritizedController{-1, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&obstacleController)},

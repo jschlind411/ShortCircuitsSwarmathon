@@ -297,13 +297,7 @@ Result DropOffController::DoWork()
   int count = countLeft + countRight;
   
   if (finalInterrupt)
-  {
-    if (isPrecisionDriving && first_time) 
-    {
-      ChangeToPrecision();
-      return result;
-    }
-    
+  { 
     result.type = behavior;
     result.b = nextProcess;
     result.reset = true;
@@ -347,12 +341,13 @@ Result DropOffController::DoWork()
       return result;
     }
 
-    // Reset timer
-    timestamp = current_time;
-    timerTimeElapsed = 0;
 
     DropTarget();
     shouldLeave = true;
+
+    // Reset timer
+    timestamp = current_time;
+    timerTimeElapsed = 0;
     return result;
   }
   else if (driveForward)
@@ -464,7 +459,7 @@ Result DropOffController::DoWork()
       if (countLeft >= countRight) 
       {
         // turn right slowly
-        cout << "turning right" << endl;
+        cout << "turning right slowly" << endl;
         PrecisionRotate(0.15);
       }
 
@@ -472,7 +467,7 @@ Result DropOffController::DoWork()
       else if (countRight >= countLeft)
       {
         // turn left slowly
-        cout << "turning left" << endl;
+        cout << "turning left slowly" << endl;
         PrecisionRotate(-0.15);
       }
       else
@@ -515,11 +510,14 @@ Result DropOffController::DoWork()
 
 void DropOffController::Reset() {
   isLost = false;
+  center_seen = false;
   shouldCenter = false;
   shouldDrop = false;
-  driveForward = false;
   shouldLeave = false;
+  lastCountRight = 0;
+  lastCountLeft = 0;
   timestamp = 0;
+  driveForward = false;
 
   // George Begin
   seenNest = false;
