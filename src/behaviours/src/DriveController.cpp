@@ -28,6 +28,7 @@ void DriveController::Reset()
 
 Result DriveController::DoWork()
 {
+  cout << "[DriveController]: DoWork()" << endl;
 
   if(result.type == behavior)
   {
@@ -227,6 +228,7 @@ bool DriveController::HasWork() {   }
 
 void DriveController::ProcessData()
 {
+  cout << "[DriveController] result.type == precisionDriving" << endl;
   if (result.type == waypoint) {
     result.type = behavior;
     result.b = noChange;
@@ -242,7 +244,7 @@ void DriveController::ProcessData()
   }
   else if (result.type == precisionDriving)
   {
-
+    cout << "[DriveController] result.type == precisionDriving" << endl;
     if (result.PIDMode == FAST_PID)
     {
       float vel = result.pd.cmdVel -linearVelocity;

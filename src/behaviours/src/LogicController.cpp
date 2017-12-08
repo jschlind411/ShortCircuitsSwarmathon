@@ -117,7 +117,7 @@ Result LogicController::DoWork() {
     //precision driving result types are when a controller wants direct command of the robots actuators
     //logic controller facilitates the command pass through in the LOGIC_STATE_PRECISION_COMMAND switch case
     else if(result.type == precisionDriving) {
-
+      cout << "[LOGIC CONTROLLER] result.type == precisionDriving" << endl;
       logicState = LOGIC_STATE_PRECISION_COMMAND;
       break;
 

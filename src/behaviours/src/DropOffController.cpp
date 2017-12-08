@@ -252,7 +252,7 @@ Result DropOffController::DoWork()
     {
       cout << ">>>> Dropping and Leaving" << endl;
       DropAndLeave();
-      return result;
+      // return result;
     }
     else
     {
