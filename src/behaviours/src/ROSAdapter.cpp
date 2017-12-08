@@ -115,6 +115,7 @@ Result result;
 
 std_msgs::String msg;
 
+bool sees_center = false;   //used to determine if it sees center
 
 geometry_msgs::Twist velocity;
 char host[128];
@@ -308,7 +309,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
   // Robot is in automode
   if (currentMode == 2 || currentMode == 3)
   {
-    
+    cout << "Current X:" << currentLocation.x << "  Current Y:" << currentLocation.y << endl;
     humanTime();
     
     //update the time used by all the controllers
@@ -425,13 +426,17 @@ void sendDriveCommand(double left, double right)
  * ROS CALLBACK HANDLERS *
  *************************/
 
-void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
+void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message)
+{
   
-  if (message->detections.size() > 0) {
+  sees_center = false;
+
+  if (message->detections.size() > 0)
+  {
     vector<Tag> tags;
 
-    for (int i = 0; i < message->detections.size(); i++) {
-
+    for (int i = 0; i < message->detections.size(); i++)
+    {
       // Package up the ROS AprilTag data into our own type that does not rely on ROS.
       Tag loc;
       loc.setID( message->detections[i].id );
@@ -448,6 +453,11 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 							    tagPose.pose.orientation.z,
 							    tagPose.pose.orientation.w ) );
       tags.push_back(loc);
+
+      if(loc.getID() == 256)
+      {
+        sees_center = true;
+      }
     }
     
     logicController.SetAprilTags(tags);
@@ -462,7 +472,8 @@ void modeHandler(const std_msgs::UInt8::ConstPtr& message)
   {
     logicController.SetModeAuto();
   }
-  else {
+  else
+  {
     logicController.SetModeManual();
   }
   sendDriveCommand(0.0, 0.0);
@@ -574,7 +585,8 @@ void mapHandler(const nav_msgs::Odometry::ConstPtr& message)
 void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message)
 {
   const int max_motor_cmd = 255;
-  if (currentMode == 0 || currentMode == 1) {
+  if (currentMode == 0 || currentMode == 1)
+  {
     float linear  = abs(message->axes[4]) >= 0.1 ? message->axes[4]*max_motor_cmd : 0.0;
     float angular = abs(message->axes[3]) >= 0.1 ? message->axes[3]*max_motor_cmd : 0.0;
 
@@ -600,13 +612,15 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message)
 }
 
 
-void publishStatusTimerEventHandler(const ros::TimerEvent&) {
+void publishStatusTimerEventHandler(const ros::TimerEvent&)
+{
   std_msgs::String msg;
   msg.data = "online";
   status_publisher.publish(msg);
 }
 
-void manualWaypointHandler(const swarmie_msgs::Waypoint& message) {
+void manualWaypointHandler(const swarmie_msgs::Waypoint& message)
+{
   Point wp;
   wp.x = message.x;
   wp.y = message.y;
@@ -621,12 +635,14 @@ void manualWaypointHandler(const swarmie_msgs::Waypoint& message) {
   }
 }
 
-void sigintEventHandler(int sig) {
+void sigintEventHandler(int sig)
+{
   // All the default sigint handler does is call shutdown()
   ros::shutdown();
 }
 
-void publishHeartBeatTimerEventHandler(const ros::TimerEvent&) {
+void publishHeartBeatTimerEventHandler(const ros::TimerEvent&)
+{
   std_msgs::String msg;
   msg.data = "";
   heartbeatPublisher.publish(msg);
@@ -645,12 +661,44 @@ long int getROSTimeInMilliSecs()
 
 Point updateCenterLocation()
 {
-  transformMapCentertoOdom();
-  
   Point tmp;
+
+  //cout << "IN UPDATECENTERLOCATION " << endl;
+
+  if(sees_center)
+  {
+    //Center in front of rover, update position
+    centerLocationOdom.x = currentLocation.x + (1.3 * cos(currentLocation.theta));
+    centerLocationOdom.y = currentLocation.y + (1.3 * sin(currentLocation.theta));
+
+    Point centerMap;
+    centerMap.x = currentLocationMap.x + (1.3 * cos(currentLocationMap.theta));
+    centerMap.y = currentLocationMap.y + (1.3 * sin(currentLocationMap.theta));
+    centerMap.theta = centerLocationMap.theta;
+    logicController.SetCenterLocationMap(centerMap);
+
+    centerLocationMap.x = centerMap.x;
+    centerLocationMap.y = centerMap.y;
+
+    //Update tmp
+    tmp.theta = centerLocation.theta;
+
+    cout << "sees center, placing center at X:" << tmp.x << "  Y:" << tmp.y << endl;
+  }
+  else
+  {
+    cout << "BEFORE transform center at X:" << centerLocationOdom.x << "  Y:" << centerLocationOdom.y << endl;
+    //Check drift and compensate
+    transformMapCentertoOdom();
+
+    cout << "AFTER transform center at X:" << centerLocationOdom.x << "  Y:" << centerLocationOdom.y << endl;
+
+    cout << "assuming center is at X:" << tmp.x << "  Y:" << tmp.y << endl << endl;
+  }
+  
   tmp.x = centerLocationOdom.x;
   tmp.y = centerLocationOdom.y;
-  
+
   return tmp;
 }
 
@@ -676,7 +724,8 @@ void transformMapCentertoOdom()
     tfListener->transformPose(publishedName + "/odom", mapPose, odomPose);
   }
   
-  catch(tf::TransformException& ex) {
+  catch(tf::TransformException& ex)
+  {
     ROS_INFO("Received an exception trying to transform a point from \"map\" to \"odom\": %s", ex.what());
     x = "Exception thrown " + (string)ex.what();
     std_msgs::String msg;
@@ -691,11 +740,11 @@ void transformMapCentertoOdom()
   centerLocationMapRef.x = odomPose.pose.position.x; //set centerLocation in odom frame
   centerLocationMapRef.y = odomPose.pose.position.y;
   
- // cout << "x ref : "<< centerLocationMapRef.x << " y ref : " << centerLocationMapRef.y << endl;
+  cout << "x ref : "<< centerLocationMapRef.x << " y ref : " << centerLocationMapRef.y << endl;
   
   float xdiff = centerLocationMapRef.x - centerLocationOdom.x;
   float ydiff = centerLocationMapRef.y - centerLocationOdom.y;
-  
+
   float diff = hypot(xdiff, ydiff);
   
   if (diff > drift_tolerance)
@@ -709,13 +758,15 @@ void transformMapCentertoOdom()
           
 }
 
-void humanTime() {
-  
+void humanTime()
+{
   float timeDiff = (getROSTimeInMilliSecs()-startTime)/1e3;
-  if (timeDiff >= 60) {
+  if (timeDiff >= 60)
+  {
     minutesTime++;
     startTime += 60  * 1e3;
-    if (minutesTime >= 60) {
+    if (minutesTime >= 60)
+    {
       hoursTime++;
       minutesTime -= 60;
     }
