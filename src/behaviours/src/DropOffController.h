@@ -32,7 +32,7 @@ public:
   void SetCurrentTimeInMilliSecs( long int time );
 
 private:
-  // NEW VARS
+  // NEW VARIABLES
   void ChangeToPrecision();
   void PrecisionRotate(float turnRate);
   void PrecisionDrive(float driveRate);
@@ -42,6 +42,7 @@ private:
   bool center_seen = false;
   bool shouldCenter = false;
   bool shouldDrop = false;
+  bool shouldLeave = false;
   int lastCountRight = 0;
   int lastCountLeft = 0;
   long int timestamp;

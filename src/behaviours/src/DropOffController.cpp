@@ -295,7 +295,51 @@ Result DropOffController::DoWork()
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
 
   int count = countLeft + countRight;
-  if (shouldDrop)
+  
+  if (finalInterrupt)
+  {
+    if (isPrecisionDriving && first_time) 
+    {
+      ChangeToPrecision();
+      return result;
+    }
+    
+    result.type = behavior;
+    result.b = nextProcess;
+    result.reset = true;
+    return result;
+  }
+  else if (shouldLeave)
+  {
+    if (isPrecisionDriving && first_time) 
+    {
+      ChangeToPrecision();
+      return result;
+    } 
+
+    // Update timer each time that we are in drive forward
+    if(timerTimeElapsed > -1) {
+      long int elapsed = current_time - timestamp;
+      timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
+    }
+
+    // Stop driving after x amt of seconds
+    if (timerTimeElapsed > 5)
+    {
+      PrecisionDrive(0);
+      finalInterrupt = true;
+    }
+
+    // Otherwise keep driving
+    else
+    {
+      PrecisionDrive(-0.3);
+    }
+
+    return result;
+
+  }
+  else if (shouldDrop)
   {
     if (isPrecisionDriving && first_time) 
     {
@@ -308,6 +352,7 @@ Result DropOffController::DoWork()
     timerTimeElapsed = 0;
 
     DropTarget();
+    shouldLeave = true;
     return result;
   }
   else if (driveForward)
@@ -466,133 +511,6 @@ Result DropOffController::DoWork()
   }
 
   return result;
-/*  
-
-  if (distanceToCenter < collectionPointVisualDistance)
-  {
-    cout << "is within the center" << endl;
-    if (first_center && isPrecisionDriving) 
-    {
-        cout << "FIRST TIME WE'VE SEEN THE CENTER" << endl;
-        first_center = false;
-        result.type = behavior;
-        result.reset = false;
-        result.b = nextProcess;
-        return result;
-    }
-
-    isPrecisionDriving = true;
-    result.type = precisionDriving;
-
-    result.pd.cmdVel = -3;
-
-    return result;
-  }
-  else {
-    if(isPrecisionDriving)
-    {
-      result.type = behavior;
-      result.b = prevProcess;
-      result.reset = false;
-    }
-
-    //SetDestinationHome();
-    result.type = waypoint;
-    result.wpts.waypoints.clear();
-    result.wpts.waypoints.push_back(this->centerLocation);
-    startWaypoint = false;
-    isPrecisionDriving = false;
-    return result;
-   
-  }
-*/
-  // else
-  // {
-  //   if(isPrecisionDriving)
-  //   {
-  //     result.type = behavior;
-  //     result.b = prevProcess;
-  //     result.reset = false;
-  //   }
-
-  //   //SetDestinationHome();
-  //   result.type = waypoint;
-  //   result.wpts.waypoints.clear();
-  //   result.wpts.waypoints.push_back(this->centerLocation);
-  //   startWaypoint = false;
-  //   isPrecisionDriving = false;
-  //   return result;
-
-  // }
- /*
-  if (finalInterrupt)
-  {
-    cout << ">>>> Flushing Controller" << endl;
-    FlushController();
-    return result;
-  }
-
-  
-  if (SeenNest() || distanceToCenter < collectionPointVisualDistance) 
-  {
-    if (first_center && isPrecisionDriving) {
-      cout << "FIRST TIME WE'VE SEEN THE CENTER" << endl;
-      first_center = false;
-      result.type = behavior;
-      result.reset = false;
-      result.b = nextProcess;
-      return result;
-    }
-
-    isPrecisionDriving = true;
-    result.type = precisionDriving;
-
-    cout << ">>>> Seen Nest" << endl;
-    // result.wpts.waypoints.clear();
-    // startWaypoint = false;
-    if (IsCentered())
-    {
-      cout << ">>>> Dropping and Leaving" << endl;
-      DropAndLeave();
-      // return result;
-    }
-    else
-    {
-      cout << ">>>> Centering Rover" << endl;
-      CenterRover();
-    }
-    // cout << "[before] result.pd.cmdVel: " << result.pd.cmdVel << endl;
-    // cout << "[before] result.type: " << result.type << endl;
-    // cout << "[before] result.b: " << result.b << endl;
-    // isPrecisionDriving = true;
-    // // result.type = precisionDriving;
-    // // result.b = nextProcess;
-    // cout << "[after] result.type: " << result.type << endl;
-    // cout << "[after] result.b: " << result.b << endl;
-    return result;
-  }
-
-  else if (IsLost() && !IfShouldGoHome()) 
-  {
-    cout << ">>>> Is Lost. Searching for nest" << endl;
-    SearchForCenter();
-    if (searchTimer > searchThreshold) {
-      cout << ">>>> Giving up Search" << endl;
-      SignalToResetRover();
-    }
-    return result;
-  }
-
-  else if(IfShouldGoHome())
-  {
-    cout << ">>>> Setting SetDestinationHome" << endl;
-    SetDestinationHome();
-    return result;
-  }
-
-  cout << "***************** uh oh. Should not get here." << endl;
-  return result;
-  */
 }
 
 void DropOffController::Reset() {
@@ -600,6 +518,7 @@ void DropOffController::Reset() {
   shouldCenter = false;
   shouldDrop = false;
   driveForward = false;
+  shouldLeave = false;
   timestamp = 0;
 
   // George Begin
