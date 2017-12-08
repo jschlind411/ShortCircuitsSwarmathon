@@ -33,7 +33,8 @@ DropOffController::~DropOffController()
 Result DropOffController::DoWork()
 {
 
-  cout << "8" << endl;
+  cout << "Current Location for center finding X:" << currentLocation.x << " Y: "<< currentLocation.y << endl;
+  //cout << "8" << endl;
 
   int count = countLeft + countRight;
 
@@ -47,7 +48,7 @@ Result DropOffController::DoWork()
   //to resart our search.
   if(reachedCollectionPoint)
   {
-    cout << "2" << endl;
+    //cout << "2" << endl;
     if (timerTimeElapsed >= 5)
     {
       if (finalInterrupt)
@@ -60,7 +61,7 @@ Result DropOffController::DoWork()
       else
       {
         finalInterrupt = true;
-        cout << "1" << endl;
+        //cout << "1" << endl;
       }
     }
     else if (timerTimeElapsed >= 0.1)
@@ -80,8 +81,13 @@ Result DropOffController::DoWork()
 
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
 
+  //cout << "Current Location for center finding X:" << currentLocation.x << " Y: "<< currentLocation.y << endl;
+
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
-  if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
+  if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0))
+  {
+
+    cout << "Driving to this center from DropOff X:" << this->centerLocation.x << " Y:" << this->centerLocation.y << endl;
 
     result.type = waypoint;
     result.wpts.waypoints.clear();
@@ -113,6 +119,7 @@ Result DropOffController::DoWork()
     {
       spinner -= 2*M_PI;
     }
+
     spinSizeIncrease += spinSizeIncrement/8;
     circularCenterSearching = true;
     //safety flag to prevent us trying to drive back to the
@@ -129,16 +136,15 @@ Result DropOffController::DoWork()
   bool centerSeen = (right || left);
 
   //reset lastCenterTagThresholdTime timout timer to current time
-  if ((!centerApproach && !seenEnoughCenterTags) || (count > 0 && !seenEnoughCenterTags)) {
-
+  if ((!centerApproach && !seenEnoughCenterTags) || (count > 0 && !seenEnoughCenterTags))
+  {
     lastCenterTagThresholdTime = current_time;
-
   }
 
   if (count > 0 || seenEnoughCenterTags || prevCount > 0) //if we have a target and the center is located drive towards it.
   {
 
-    cout << "9" << endl;
+    //cout << "9" << endl;
     centerSeen = true;
 
     if (first_center && isPrecisionDriving)
@@ -205,7 +211,8 @@ Result DropOffController::DoWork()
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
 
     //we have driven far enough forward to have passed over the circle.
-    if (count < 1 && seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay) {
+    if (count < 1 && seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay)
+    {
       centerSeen = false;
     }
     centerApproach = true;
@@ -224,7 +231,7 @@ Result DropOffController::DoWork()
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
     if (timeSinceSeeingEnoughCenterTags > lostCenterCutoff)
     {
-      cout << "4" << endl;
+      //cout << "4" << endl;
       //go back to drive to center base location instead of drop off attempt
       reachedCollectionPoint = false;
       seenEnoughCenterTags = false;
@@ -265,7 +272,8 @@ Result DropOffController::DoWork()
 
 }
 
-void DropOffController::Reset() {
+void DropOffController::Reset()
+{
   result.type = behavior;
   result.b = wait;
   result.pd.cmdVel = 0;
@@ -293,7 +301,7 @@ void DropOffController::Reset() {
   targetHeld = false;
   startWaypoint = false;
   first_center = true;
-  cout << "6" << endl;
+  //cout << "6" << endl;
 
 }
 
@@ -363,8 +371,8 @@ bool DropOffController::ShouldInterrupt()
   }
 }
 
-bool DropOffController::HasWork() {
-
+bool DropOffController::HasWork()
+{
   if(timerTimeElapsed > -1)
   {
     long int elapsed = current_time - returnTimer;
@@ -386,16 +394,10 @@ bool DropOffController::IsChangingMode()
 
 void DropOffController::SetCenterLocation(Point center)
 {
-  float diffX = this->centerLocation.x - center.x;
-  float diffY = this->centerLocation.y - center.y;
-
-  if (!result.wpts.waypoints.empty())
-  {
-    result.wpts.waypoints.back().x -= diffX;
-    result.wpts.waypoints.back().y -= diffY;
-  }
-
   centerLocation = center;
+
+  cout << "DropOff thinks center at X: " << centerLocation.x << " Y:" << centerLocation.y << endl;
+
 }
 
 void DropOffController::SetCurrentLocation(Point current)

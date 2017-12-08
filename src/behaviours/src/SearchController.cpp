@@ -59,7 +59,7 @@ void SearchController::SetSuccesfullPickup()
 Result SearchController::DoWork()
 {
 
-  cout << "In SearchController Do Work" << endl;
+  //cout << "In SearchController Do Work" << endl;
 
   //searchLocation declaration in .h
   result.type = waypoint;
@@ -69,7 +69,7 @@ Result SearchController::DoWork()
   if (first_waypoint)
   {
 
-    cout << "first time running, doing first time setup, turning 180" << endl;
+    //cout << "first time running, doing first time setup, turning 180" << endl;
 
     first_waypoint = false;
     SetBoarderValues();
@@ -96,19 +96,19 @@ Result SearchController::DoWork()
   if(succesfullPickup)
   {
     //THIS ENSURES SOME SITE FIDELITY
-    cout << "In FinishedDropOffLogic" << endl;
+    //cout << "In FinishedDropOffLogic" << endl;
 
     //if rover was in the octagon after the first point
     if(positionInSearch > 1)
     {
-      cout << "Interrupted while doing the octagon search, going back on point" << endl;
+      //cout << "Interrupted while doing the octagon search, going back on point" << endl;
       positionInSearch--;           //go back one position in the octagon
     }
 
     // Otherwise rover was driving to first point
     else
     {
-      cout << "Interrupted going to first point in octagon, heading back to searchLocation to start pattern again" << endl;
+      //cout << "Interrupted going to first point in octagon, heading back to searchLocation to start pattern again" << endl;
       destination = searchLocation;  //go back to the searchLocation
       hasStartedPattern = false;     //reset hasStartedPattern (Just In Case)
       positionInSearch = 0;          //reset positionInSearch back to 0
@@ -126,13 +126,13 @@ Result SearchController::DoWork()
   
   else if(!hasSearchPoint)  //if we have finished/don't currently have/need a new search area make one
   {
-    cout << "Doesn't have search area, generating one" << endl;
+    //cout << "Doesn't have search area, generating one" << endl;
     searchLocation = ChooseRandomPoint();
     destination = searchLocation;
   }
   else //otherwise search around the area
   {
-    cout << "Has Search Area, performing search pattern" << endl;
+    //cout << "Has Search Area, performing search pattern" << endl;
     destination = GenDeliberatePoint();
   }
 
@@ -160,12 +160,12 @@ Result SearchController::DoWork()
 void SearchController::SetInterrupted(bool centerSeen)
 {
 
-  cout << "In SetInterrupt" << endl;
+  //cout << "In SetInterrupt" << endl;
 
   //if te rover sees the center and is returning to the nest
   if(centerSeen && returning)
   {
-    cout << "Saw center, triggering returning behavior off" << endl;
+    //cout << "Saw center, triggering returning behavior off" << endl;
     returning = false;
   }
 
@@ -175,7 +175,7 @@ void SearchController::SetInterrupted(bool centerSeen)
     if(hasStartedPattern)
     {
       //SAW CENTER DOING PATTERN
-      cout << "Saw center while performing pattern, setting new search point" << endl;
+      //cout << "Saw center while performing pattern, setting new search point" << endl;
 
       hasSearchPoint = false;       //Tells robot it does not have a search point and to generate a new one
       positionInSearch = 0;         //Reset Position in Search to start from beginning
@@ -184,7 +184,7 @@ void SearchController::SetInterrupted(bool centerSeen)
     {
       //ASSUME DRIVING THROUGH CENTER
 
-      cout << "Interrupted on the way to searchLocation, assuming driving through center" << endl;
+      //cout << "Interrupted on the way to searchLocation, assuming driving through center" << endl;
 
       hasSearchPoint = false;       //Tells robot it does not have a search point and to generate a new one
     }
@@ -200,11 +200,11 @@ float SearchController::ChooseRandomTheta(float roverAngle)
 {
   double absCurrentAngle = angles::normalize_angle_positive(roverAngle);
 
-  cout << "Current Theta:  " << absCurrentAngle << endl;
+  //cout << "Current Theta:  " << absCurrentAngle << endl;
 
   float newAngle = rng->gaussian(roverAngle, (M_PI/2)); //90 degrees in radians
 
-  cout << "Angle to Achieve" << newAngle << endl;
+  //cout << "Angle to Achieve" << newAngle << endl;
 
   return newAngle;
 }
@@ -221,7 +221,7 @@ float SearchController::ChooseRandomTheta(float roverAngle)
  */
 Point SearchController::ChooseRandomPoint()
 {
-   cout << "In ChooseRandomPoint" << endl;
+   //cout << "In ChooseRandomPoint" << endl;
 
   //create bool
   //start loop
@@ -236,7 +236,7 @@ Point SearchController::ChooseRandomPoint()
 
     float searchDist = rng->uniformReal(MIN_SEARCH_DIST, MAX_ARENA_SIZE);
 
-    cout << "SEARCH DISTANCE:  " << searchDist << endl;
+    //cout << "SEARCH DISTANCE:  " << searchDist << endl;
 
     //theta is the angle at which to plot the new point
     temp.theta = ChooseRandomTheta(currentLocation.theta);
@@ -271,11 +271,11 @@ Point SearchController::GenDeliberatePoint()
 {
   Point temp;
 
- cout << "In GenDelPoint" << endl;
+ //cout << "In GenDelPoint" << endl;
 
   float patternSize = 0.5;      //sets distance from searchPoint for octagon pattern
 
-  cout << "GOING TO POINT " << positionInSearch << endl;
+  //cout << "GOING TO POINT " << positionInSearch << endl;
 
   //Octagon ninth point will set it next location to the centerLocation.
   if(positionInSearch > 8 || positionInSearch < 0)
@@ -309,7 +309,7 @@ Point SearchController::GenDeliberatePoint()
 
   float dist = hypot((temp.y - currentLocation.y), (temp.x - currentLocation.x));
 
-  cout << "CALCULATED DISTANCE IN SEARCH:  " << dist << endl;
+  //cout << "CALCULATED DISTANCE IN SEARCH:  " << dist << endl;
   return temp;
 
 }
@@ -317,7 +317,7 @@ Point SearchController::GenDeliberatePoint()
 Point SearchController::InterruptedLogic()
 {
 
-  cout << "In InterruptedLogic" << endl;
+  //cout << "In InterruptedLogic" << endl;
 
   Point temp;
 
@@ -330,7 +330,7 @@ Point SearchController::InterruptedLogic()
   if(numTimesExceeded > num_of_tries)
   {
     //JUST GO HOME!               Reset all variables
-    cout << "Exceeded Attempts 3 times in a row, going back to center" << endl;
+    //cout << "Exceeded Attempts 3 times in a row, going back to center" << endl;
 
 
     returning = true;             //trigger go back to center behavior
@@ -354,7 +354,7 @@ Point SearchController::InterruptedLogic()
     {
       //DRIVING THROUGH CENTER
 
-      cout << "Interrupted by seeing center, assuming driving through center.  Forcing a new Search Point to be Generated" << endl;
+      //cout << "Interrupted by seeing center, assuming driving through center.  Forcing a new Search Point to be Generated" << endl;
       searchLocation = ChooseRandomPoint();        //create new search point
       temp = searchLocation;                       //set as new point to try to acheive
     }
@@ -364,7 +364,7 @@ Point SearchController::InterruptedLogic()
     {
       //DRIVING HOME
 
-      cout << "Interrupted on way back to center, going back to center!" << endl;
+      //cout << "Interrupted on way back to center, going back to center!" << endl;
       temp = centerLocation;         //go back to center
     }
   }
@@ -376,19 +376,19 @@ Point SearchController::InterruptedLogic()
   {
     if(!exceededAttempts)
     {
-      cout << "Was Interrupted on the way to searchLocation, going back" << endl;
+      //cout << "Was Interrupted on the way to searchLocation, going back" << endl;
       temp = searchLocation;           //go back to searchLocation
     }
     else if (returning)
     {
       //Rover will set heading to center as it is returning
-      cout << "Interrupted on way back to center, going back to center!" << endl;
+      //cout << "Interrupted on way back to center, going back to center!" << endl;
       temp = centerLocation;         //go back to center
     }
     //assume position is unreachable
     else
     {
-      cout << "Abandoning search point, may be unreachable" << endl;
+      //cout << "Abandoning search point, may be unreachable" << endl;
       temp = centerLocation;
     }
   }
@@ -404,13 +404,13 @@ Point SearchController::InterruptedLogic()
     {
       if(!exceededAttempts)
       {
-        cout << "Interrupted while doing the octagon search, going back on point" << endl;
+        //cout << "Interrupted while doing the octagon search, going back on point" << endl;
         positionInSearch--;                   //go back one position in the octagon
         temp = GenDeliberatePoint();          //get that point
       }
       else
       {
-        cout << "Abandoning octagon point, may be unreachable" << endl;
+        //cout << "Abandoning octagon point, may be unreachable" << endl;
         temp = GenDeliberatePoint();          //go to next point
       }
     }
@@ -420,14 +420,14 @@ Point SearchController::InterruptedLogic()
     {
       if(!exceededAttempts)
       {
-        cout << "Interrupted going to first point in octagon, heading back to searchLocation to start pattern again" << endl;
+        //cout << "Interrupted going to first point in octagon, heading back to searchLocation to start pattern again" << endl;
         temp = searchLocation;         //go back to the searchLocation
         hasStartedPattern = false;     //reset hasStartedPattern (Just In Case)
         positionInSearch = 0;          //reset positionInSearch back to 0
       }
       else
       {
-        cout << "Abandoning octagon point, may be unreachable" << endl;
+        //cout << "Abandoning octagon point, may be unreachable" << endl;
         temp = GenDeliberatePoint();          //go to next point
       }
     }
@@ -501,27 +501,27 @@ void SearchController::SetBoarderValues()
 
   if(initTheta <= (PI_4))
   {
-//    cout << "I AM IN QUADRANT 1:  "  << initTheta << endl;
+//    //cout << "I AM IN QUADRANT 1:  "  << initTheta << endl;
     quadrant = 1;
   }
   else if(initTheta <= (PI3_4))
   {
-//    cout << "I AM IN QUADRANT 2:  " << initTheta << endl;
+//    //cout << "I AM IN QUADRANT 2:  " << initTheta << endl;
     quadrant = 2;
   }
   else if(initTheta <= (PI5_4))
   {
-//    cout << "I AM IN QUADRANT 3:  " << initTheta << endl;
+//    //cout << "I AM IN QUADRANT 3:  " << initTheta << endl;
     quadrant = 3;
   }
   else if (initTheta <= PI7_4)
   {
-//    cout << "I AM IN QUADRANT 4:  " << initTheta << endl;
+//    //cout << "I AM IN QUADRANT 4:  " << initTheta << endl;
     quadrant = 4;
   }
   else
   {
-//    cout << "I AM IN QUADRANT 1:  "  << initTheta << endl;
+//    //cout << "I AM IN QUADRANT 1:  "  << initTheta << endl;
     quadrant = 1;
   }
 
@@ -566,25 +566,25 @@ void SearchController::SetBoarderValues()
 bool SearchController::IsWithinBoundary(Point searchPoint)
 {
     bool valid = false;
-//    cout << "Current Point X:  " << searchPoint.x << "  Current Point Y:  " << searchPoint.y << endl;
-//    cout << "Boundary DISTANCE: " << boundary_distance << endl;
+//    //cout << "Current Point X:  " << searchPoint.x << "  Current Point Y:  " << searchPoint.y << endl;
+//    //cout << "Boundary DISTANCE: " << boundary_distance << endl;
       
     if(useX)
     {
      
       float checkX = centerLocation.x + boundary_distance;
-//      cout << "Can't go past on X: " << checkX << endl;
+//      //cout << "Can't go past on X: " << checkX << endl;
 
       if(boundary_distance < 0)
       {
         if(searchPoint.x < checkX)
         {
-//          cout << "NOT A VALID POINT" << endl;
+//          //cout << "NOT A VALID POINT" << endl;
           valid = false;
         }
         else
         {
-//          cout << "VALID POINT" << endl;
+//          //cout << "VALID POINT" << endl;
           valid = true;
         }
       }
@@ -593,12 +593,12 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
       {
         if(searchPoint.x > checkX)
         {
-//          cout << "NOT A VALID POINT" << endl;
+//          //cout << "NOT A VALID POINT" << endl;
           valid = false;
         }
         else
         {
-//          cout << "VALID POINT" << endl;
+//          //cout << "VALID POINT" << endl;
           valid = true;
         }
       }
@@ -607,18 +607,18 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
     else
     {
       float checkY = centerLocation.y + boundary_distance;
-//      cout << "Can't go past on Y: " << checkY << endl;
+//      //cout << "Can't go past on Y: " << checkY << endl;
 
       if(boundary_distance < 0)
       {
         if(searchPoint.y < checkY)
         {
-//          cout << "NOT A VALID POINT" << endl;
+//          //cout << "NOT A VALID POINT" << endl;
           valid = false;
         }
         else
         {
-//          cout << "VALID POINT" << endl;
+//          //cout << "VALID POINT" << endl;
           valid = true;
         }
       }
@@ -627,12 +627,12 @@ bool SearchController::IsWithinBoundary(Point searchPoint)
       {
         if(searchPoint.y > checkY)
         {
-//          cout << "NOT A VALID POINT" << endl;
+//          //cout << "NOT A VALID POINT" << endl;
           valid = false;
         }
         else
         {
-//          cout << "VALID POINT" << endl;
+//          //cout << "VALID POINT" << endl;
           valid = true;
         }
       }
@@ -675,7 +675,7 @@ void SearchController::PrintStatusToLog()
       s = "false";
   }
 
-  cout << "Search Point = " << s <<  endl;
+  //cout << "Search Point = " << s <<  endl;
 
   if(returning)
   {
@@ -686,7 +686,7 @@ void SearchController::PrintStatusToLog()
       s = "false";
   }
 
-  cout << "returning = " << s <<  endl;
+  //cout << "returning = " << s <<  endl;
 
   if(succesfullPickup)
   {
@@ -697,7 +697,7 @@ void SearchController::PrintStatusToLog()
       s = "false";
   }
 
-  cout << "successfullpickup = " << s <<  endl;
+  //cout << "successfullpickup = " << s <<  endl;
 
   if(wasInterrupted)
   {
@@ -708,7 +708,7 @@ void SearchController::PrintStatusToLog()
       s = "false";
   }
 
-  cout << "wasInterrupted = " << s <<  endl;
+  //cout << "wasInterrupted = " << s <<  endl;
 
   if(result.wpts.waypoints.size() == 0)
   {
@@ -719,7 +719,7 @@ void SearchController::PrintStatusToLog()
       s = "is not empty ";
   }
 
-  cout << "waypoints list " << s << endl;
+  //cout << "waypoints list " << s << endl;
 
 }
 
@@ -728,12 +728,12 @@ bool SearchController::CheckAttemptStatus()
   //CHECK ATTEMPTS
 
   attemptCount++;
-  cout << "Avoided Obstacle; Attempt #" << attemptCount << endl;
+  //cout << "Avoided Obstacle; Attempt #" << attemptCount << endl;
 
   //if we have exceeded our limits of attempts (1st CHECK)
   if(attemptCount > num_of_tries)
   {
-    cout << "Exceeded # Attempts" << endl;
+    //cout << "Exceeded # Attempts" << endl;
     numTimesExceeded++;             //iterate times exceeded
     attemptCount = 0;               //RESET attempt count
 
