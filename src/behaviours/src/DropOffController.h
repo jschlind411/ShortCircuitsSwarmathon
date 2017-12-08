@@ -55,6 +55,7 @@ private:
   void FlushController();
   void CenterRover();
   void DropAndLeave();
+  void SetIsCentered(bool val);
   void SetSeenNest(bool val);
   void SearchForCenter();
   void SetDestinationHome();

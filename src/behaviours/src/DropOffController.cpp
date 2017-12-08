@@ -117,6 +117,11 @@ bool DropOffController::IsCentered()
   return isCentered;
 }
 
+void DropOffController::SetIsCentered(bool val)
+{
+  isCentered = val;
+}
+
 void DropOffController::IncrementNestTimer()
 {
   nestTimer ++;
@@ -190,13 +195,15 @@ void DropOffController::CenterRover()
   // It's okay if there are slightly more blocks on left or rights
   else if ((countLeft <= countRight) && (countRight <= (countLeft + countThreshold)))
   {
-    isCentered = true;
+    cout << ">>>> centered by block count" << endl;
+    SetIsCentered(true);
   }
 
   // Make sure we don't get stuck trying to center.
-  else if (centeringTimer > centeringThreshold)
+  if (centeringTimer > centeringThreshold)
   {
-    isCentered = true;
+    cout << ">>>>> centered by timer timing out" << endl;
+    SetIsCentered(true);
   }
 
 }
@@ -252,10 +259,17 @@ Result DropOffController::DoWork()
       cout << ">>>> Centering Rover" << endl;
       CenterRover();
     }
+    cout << "[before] result.type: " << result.type << endl;
+    cout << "[before] result.b: " << result.b << endl;
+    isPrecisionDriving = true;
+    result.type = precisionDriving;
+    result.b = nextProcess;
+    cout << "[after] result.type: " << result.type << endl;
+    cout << "[after] result.b: " << result.b << endl;
     return result;
   }
 
-  else if (IsLost()) 
+  else if (IsLost() && !IfShouldGoHome()) 
   {
     cout << ">>>> Is Lost. Searching for nest" << endl;
     SearchForCenter();
