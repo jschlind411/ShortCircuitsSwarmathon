@@ -165,7 +165,7 @@ void DropOffController::DropAndLeave()
   // Otherwise keep moving forward
   else 
   {
-    cout << ">>> Moving into nest" << endl;
+    //cout << ">>> Moving into nest" << endl;
     result.pd.cmdVel = nestVelocity;
   }
 }
@@ -176,9 +176,9 @@ void DropOffController::CenterRover()
   // isPrecisionDriving = true;
   // result.type = precisionDriving;
   centeringTimer ++;
-  cout << "centering timer: " << centeringTimer << endl;
+  //cout << "centering timer: " << centeringTimer << endl;
 
-  cout << ">>>> Num of blocks. Left: " << countLeft << "\tRight: " << countRight << endl;
+  //cout << ">>>> Num of blocks. Left: " << countLeft << "\tRight: " << countRight << endl;
   
   // Too many blocks on left
   if (countLeft > (countRight+countThreshold))
@@ -198,14 +198,14 @@ void DropOffController::CenterRover()
   // It's okay if there are slightly more blocks on left or rights
   else if ((countLeft <= countRight) && (countRight <= (countLeft + countThreshold)))
   {
-    cout << ">>>> centered by block count" << endl;
+    //cout << ">>>> centered by block count" << endl;
     SetIsCentered(true);
   }
 
   // Make sure we don't get stuck trying to center.
   if (centeringTimer > centeringThreshold)
   {
-    cout << ">>>>> centered by timer timing out" << endl;
+    //cout << ">>>>> centered by timer timing out" << endl;
     SetIsCentered(true);
   }
 
@@ -290,7 +290,7 @@ void DropOffController::DropTarget()
 */
 Result DropOffController::DoWork() 
 {
-  cout << ">>>>>>>>> DROP OFF CONTROLLER >>>>>>>>>>" << endl;
+  //cout << ">>>>>>>>> DROP OFF CONTROLLER >>>>>>>>>>" << endl;
 
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
 
@@ -318,7 +318,7 @@ Result DropOffController::DoWork()
     }
 
     // Stop driving after x amt of seconds
-    if (timerTimeElapsed > 5)
+    if (timerTimeElapsed > 4.5)
     {
       PrecisionDrive(0);
       finalInterrupt = true;
@@ -352,7 +352,7 @@ Result DropOffController::DoWork()
   }
   else if (driveForward)
   {
-    cout << "timerTimeElapsed: " << timerTimeElapsed << endl;
+    //cout << "timerTimeElapsed: " << timerTimeElapsed << endl;
     if (isPrecisionDriving && first_time) 
     {
       ChangeToPrecision();
@@ -366,7 +366,7 @@ Result DropOffController::DoWork()
     }
 
     // Stop driving after x amt of seconds
-    if (timerTimeElapsed > 3)
+    if (timerTimeElapsed > 3.5)
     {
       PrecisionDrive(0);
       shouldDrop = true;
@@ -426,7 +426,7 @@ Result DropOffController::DoWork()
       if (countLeft - countRight >= tagDiff) 
       {
         // turn right
-        cout << "turning right" << endl;
+        //cout << "turning right" << endl;
         PrecisionRotate(0.15);
       }
 
@@ -434,14 +434,14 @@ Result DropOffController::DoWork()
       else if (countRight - countLeft >= tagDiff)
       {
         // turn left
-        cout << "turning left" << endl;
+        //cout << "turning left" << endl;
         PrecisionRotate(-0.15);
       }
 
       // Otherwise stay put
       else
       {
-        cout << "equal tags" << endl;
+        //cout << "equal tags" << endl;
         PrecisionDrive(0);
         driveForward = true;
         timerTimeElapsed = 0;
@@ -459,7 +459,7 @@ Result DropOffController::DoWork()
       if (countLeft >= countRight) 
       {
         // turn right slowly
-        cout << "turning right slowly" << endl;
+        //cout << "turning right slowly" << endl;
 
         result.pd.cmdVel = 0.15;
         result.pd.cmdAngularError = -0.15;
@@ -484,7 +484,7 @@ Result DropOffController::DoWork()
   }
   else if (center_seen) 
   {
-    cout << "center_seen && count > nestTagThreshold" << endl;
+    //cout << "center_seen && count > nestTagThreshold" << endl;
     shouldCenter = true;
     PrecisionDrive(0);
     return result; 
@@ -492,20 +492,20 @@ Result DropOffController::DoWork()
 
   else if (isLost)
   {
-    cout << "isLost" << endl;
+    //cout << "isLost" << endl;
     SearchForCenter();
     return result;   
   }
   else if (distanceToCenter <= collectionPointVisualDistance)
   {
-    cout << "close enough to center. Still lost" << endl;
+    //cout << "close enough to center. Still lost" << endl;
     isLost = true;
     SearchForCenter();
     return result;
   }
   else 
   {
-    cout << "drive back home" << endl;
+    //cout << "drive back home" << endl;
     DriveToCenter();
     return result;
   }
@@ -561,7 +561,7 @@ void DropOffController::Reset() {
   targetHeld = false;
   startWaypoint = false;
   first_center = true;
-  cout << "Finished reseting DropOffController variables." << endl;
+  //cout << "Finished reseting DropOffController variables." << endl;
 
 }
 
