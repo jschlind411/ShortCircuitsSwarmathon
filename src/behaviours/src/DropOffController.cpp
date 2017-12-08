@@ -33,7 +33,7 @@ DropOffController::~DropOffController() {
 void DropOffController::FlushController() {
   result.wpts.waypoints.clear();
   result.type = behavior;
-  result.b = prevProcess;
+  result.b = nextProcess;
   result.reset = true;
 }
 
@@ -44,6 +44,7 @@ bool DropOffController::IfShouldGoHome()
 
   if ((distanceToCenter > collectionPointVisualDistance) && targetHeld )
   {
+    goingHome = true;
     return true;
   }
   return false;
@@ -51,11 +52,13 @@ bool DropOffController::IfShouldGoHome()
 
 void DropOffController::SetDestinationHome() 
 {
+  // result.b = nextProcess;
   result.type = waypoint;
   result.wpts.waypoints.clear();
   result.wpts.waypoints.push_back(this->centerLocation);
   startWaypoint = false;
   isPrecisionDriving = false;
+  goingHome = true;
 }
 
 bool DropOffController::IsLost()
@@ -134,8 +137,8 @@ void DropOffController::SignalDoneDroppingOff()
 
 void DropOffController::DropAndLeave()
 {
-  isPrecisionDriving = true;
-  result.type = precisionDriving;
+  // isPrecisionDriving = true;
+  // result.type = precisionDriving;
   result.pd.cmdAngularError = 0.0;
 
   IncrementNestTimer();
@@ -170,8 +173,8 @@ void DropOffController::DropAndLeave()
 void DropOffController::CenterRover()
 {
   float turnDirection = 1;
-  isPrecisionDriving = true;
-  result.type = precisionDriving;
+  // isPrecisionDriving = true;
+  // result.type = precisionDriving;
   centeringTimer ++;
   cout << "centering timer: " << centeringTimer << endl;
 
@@ -225,6 +228,60 @@ void DropOffController::SignalToResetRover()
   finalInterrupt = true;
 }
 
+void DropOffController::ChangeToPrecision()
+{
+  first_time = false;
+  result.type = behavior;
+  result.reset = false;
+  result.b = nextProcess;
+}
+
+void DropOffController::PrecisionDrive(float driveRate)
+{
+  isPrecisionDriving = true;
+  result.type = precisionDriving;
+
+  result.pd.cmdVel = driveRate;
+  result.pd.cmdAngularError = 0.0;
+
+}
+
+void DropOffController::DriveToCenter()
+{
+  if (isPrecisionDriving)
+  {
+    result.type = behavior;
+    result.b = prevProcess;
+    result.reset = false;
+  }
+
+  result.type = waypoint;
+  result.wpts.waypoints.clear();
+  result.wpts.waypoints.push_back(this->centerLocation);
+  startWaypoint = false;
+  isPrecisionDriving = false;
+
+}
+
+void DropOffController::PrecisionRotate(float turnRate)
+{
+  isPrecisionDriving = true;
+  result.type = precisionDriving;
+
+  result.pd.cmdVel = 0.0;
+  result.pd.cmdAngularError = turnRate;
+}
+
+void DropOffController::DropTarget()
+{
+  // Drop block
+  result.fingerAngle = M_PI_2; //open fingers
+  result.wristAngle = 0; //raise wrist 
+
+  result.pd.cmdVel = 0;
+  result.pd.cmdAngularError = 0;
+}
+
 /**
  * DropOffController is tasked with setting the waypoint of where to drop off the object
  * tasked to drive onto the collection zone (the nest)
@@ -234,7 +291,240 @@ void DropOffController::SignalToResetRover()
 Result DropOffController::DoWork() 
 {
   cout << ">>>>>>>>> DROP OFF CONTROLLER >>>>>>>>>>" << endl;
-  
+
+  double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
+
+  int count = countLeft + countRight;
+  if (shouldDrop)
+  {
+    if (isPrecisionDriving && first_time) 
+    {
+      ChangeToPrecision();
+      return result;
+    }
+
+    // Reset timer
+    timestamp = current_time;
+    timerTimeElapsed = 0;
+
+    DropTarget();
+    return result;
+  }
+  else if (driveForward)
+  {
+    cout << "timerTimeElapsed: " << timerTimeElapsed << endl;
+    if (isPrecisionDriving && first_time) 
+    {
+      ChangeToPrecision();
+      return result;
+    }
+    
+    // Update timer each time that we are in drive forward
+    if(timerTimeElapsed > -1) {
+      long int elapsed = current_time - timestamp;
+      timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
+    }
+
+    // Stop driving after x amt of seconds
+    if (timerTimeElapsed > 3)
+    {
+      PrecisionDrive(0);
+      shouldDrop = true;
+    }
+
+    // Otherwise keep driving
+    else
+    {
+      PrecisionDrive(0.15);
+    }
+    
+    return result;
+  }
+
+  else if (shouldCenter)
+  {    
+    if (isPrecisionDriving && first_time) 
+    {
+      ChangeToPrecision();
+      return result;
+    }
+
+    // If we see enough tags, center the robot
+    if(count > nestTagThreshold)
+    {
+      // Check to see if we may have turned too far from a previous iteration
+      if (count == 0 && (lastCountRight + lastCountLeft > 0))
+      {
+        isPrecisionDriving = true;
+        result.type = precisionDriving;
+
+        // If we turned too much to the right, turn left instead
+        if(lastCountRight > lastCountLeft)
+        {
+          result.pd.cmdVel = -0.15;
+          result.pd.cmdAngularError = tRate;
+        }
+
+        // If we turned too much to the left, turn right instead
+        else if (lastCountLeft > lastCountRight)
+        {
+          result.pd.cmdVel = -0.15;
+          result.pd.cmdAngularError = -tRate; 
+        }
+
+        // Shouldn't get here, but in case drive backwards
+        else
+        {
+          PrecisionDrive(-dRate);
+        }
+        return result;
+      }
+
+      int tagDiff = 3;
+
+      // If too many on left, turn right
+      if (countLeft - countRight >= tagDiff) 
+      {
+        // turn right
+        cout << "turning right" << endl;
+        PrecisionRotate(0.15);
+      }
+
+      // If too many on right, turn left
+      else if (countRight - countLeft >= tagDiff)
+      {
+        // turn left
+        cout << "turning left" << endl;
+        PrecisionRotate(-0.15);
+      }
+
+      // Otherwise stay put
+      else
+      {
+        cout << "equal tags" << endl;
+        PrecisionDrive(0);
+        driveForward = true;
+        timerTimeElapsed = 0;
+        timestamp = current_time;
+      }
+
+      // Keep track of how many tags we saw
+      lastCountRight = countRight;
+      lastCountLeft = countLeft;
+
+      return result;
+    }
+    else
+    {
+      if (countLeft >= countRight) 
+      {
+        // turn right slowly
+        cout << "turning right" << endl;
+        PrecisionRotate(0.15);
+      }
+
+      // If too many on right, turn left
+      else if (countRight >= countLeft)
+      {
+        // turn left slowly
+        cout << "turning left" << endl;
+        PrecisionRotate(-0.15);
+      }
+      else
+      {
+        PrecisionDrive(0.15);
+      }
+
+    }
+  }
+  else if (center_seen) 
+  {
+    cout << "center_seen && count > nestTagThreshold" << endl;
+    shouldCenter = true;
+    PrecisionDrive(0);
+    return result; 
+  }
+
+  else if (isLost)
+  {
+    cout << "isLost" << endl;
+    SearchForCenter();
+    return result;   
+  }
+  else if (distanceToCenter <= collectionPointVisualDistance)
+  {
+    cout << "close enough to center. Still lost" << endl;
+    isLost = true;
+    SearchForCenter();
+    return result;
+  }
+  else 
+  {
+    cout << "drive back home" << endl;
+    DriveToCenter();
+    return result;
+  }
+
+  return result;
+/*  
+
+  if (distanceToCenter < collectionPointVisualDistance)
+  {
+    cout << "is within the center" << endl;
+    if (first_center && isPrecisionDriving) 
+    {
+        cout << "FIRST TIME WE'VE SEEN THE CENTER" << endl;
+        first_center = false;
+        result.type = behavior;
+        result.reset = false;
+        result.b = nextProcess;
+        return result;
+    }
+
+    isPrecisionDriving = true;
+    result.type = precisionDriving;
+
+    result.pd.cmdVel = -3;
+
+    return result;
+  }
+  else {
+    if(isPrecisionDriving)
+    {
+      result.type = behavior;
+      result.b = prevProcess;
+      result.reset = false;
+    }
+
+    //SetDestinationHome();
+    result.type = waypoint;
+    result.wpts.waypoints.clear();
+    result.wpts.waypoints.push_back(this->centerLocation);
+    startWaypoint = false;
+    isPrecisionDriving = false;
+    return result;
+   
+  }
+*/
+  // else
+  // {
+  //   if(isPrecisionDriving)
+  //   {
+  //     result.type = behavior;
+  //     result.b = prevProcess;
+  //     result.reset = false;
+  //   }
+
+  //   //SetDestinationHome();
+  //   result.type = waypoint;
+  //   result.wpts.waypoints.clear();
+  //   result.wpts.waypoints.push_back(this->centerLocation);
+  //   startWaypoint = false;
+  //   isPrecisionDriving = false;
+  //   return result;
+
+  // }
+ /*
   if (finalInterrupt)
   {
     cout << ">>>> Flushing Controller" << endl;
@@ -243,11 +533,23 @@ Result DropOffController::DoWork()
   }
 
   
-  if (SeenNest()) 
+  if (SeenNest() || distanceToCenter < collectionPointVisualDistance) 
   {
+    if (first_center && isPrecisionDriving) {
+      cout << "FIRST TIME WE'VE SEEN THE CENTER" << endl;
+      first_center = false;
+      result.type = behavior;
+      result.reset = false;
+      result.b = nextProcess;
+      return result;
+    }
+
+    isPrecisionDriving = true;
+    result.type = precisionDriving;
+
     cout << ">>>> Seen Nest" << endl;
-    result.wpts.waypoints.clear();
-    startWaypoint = false;
+    // result.wpts.waypoints.clear();
+    // startWaypoint = false;
     if (IsCentered())
     {
       cout << ">>>> Dropping and Leaving" << endl;
@@ -259,13 +561,14 @@ Result DropOffController::DoWork()
       cout << ">>>> Centering Rover" << endl;
       CenterRover();
     }
-    cout << "[before] result.type: " << result.type << endl;
-    cout << "[before] result.b: " << result.b << endl;
-    isPrecisionDriving = true;
-    result.type = precisionDriving;
-    result.b = nextProcess;
-    cout << "[after] result.type: " << result.type << endl;
-    cout << "[after] result.b: " << result.b << endl;
+    // cout << "[before] result.pd.cmdVel: " << result.pd.cmdVel << endl;
+    // cout << "[before] result.type: " << result.type << endl;
+    // cout << "[before] result.b: " << result.b << endl;
+    // isPrecisionDriving = true;
+    // // result.type = precisionDriving;
+    // // result.b = nextProcess;
+    // cout << "[after] result.type: " << result.type << endl;
+    // cout << "[after] result.b: " << result.b << endl;
     return result;
   }
 
@@ -289,12 +592,22 @@ Result DropOffController::DoWork()
 
   cout << "***************** uh oh. Should not get here." << endl;
   return result;
+  */
 }
 
 void DropOffController::Reset() {
+  isLost = false;
+  shouldCenter = false;
+  shouldDrop = false;
+  driveForward = false;
+  timestamp = 0;
+
   // George Begin
   seenNest = false;
   isCentered = false;
+  goingHome = false;
+  firstSet = true;
+  first_time = true;
 
   nestTimer = -1;
   // George End
@@ -334,6 +647,7 @@ void DropOffController::SetTargetData(vector<Tag> tags) {
   countRight = 0;
   countLeft = 0;
 
+  center_seen = false;
 
   if(targetHeld) {
     // if a target is detected and we are looking for center tags
@@ -350,14 +664,15 @@ void DropOffController::SetTargetData(vector<Tag> tags) {
           } else {
             countLeft++;
           }
+          center_seen = true;
         }
       }
     }
 
-    if (countLeft + countRight > nestTagThreshold)
-    {
-      SetSeenNest(true);
-    }
+    // if (countLeft + countRight > nestTagThreshold)
+    // {
+    //   SetSeenNest(true);
+    // }
   }
 
 }
@@ -393,11 +708,15 @@ bool DropOffController::ShouldInterrupt() {
 }
 
 bool DropOffController::HasWork() {
-  // if(timerTimeElapsed > -1) {
-  //   long int elapsed = current_time - returnTimer;
-  //   timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
-  // }
+  if(timerTimeElapsed > -1) {
+    long int elapsed = current_time - timestamp;
+    timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
+  }
 
+  // if (goingHome)
+  // {
+  //   return true;
+  // }
   // if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving) {
   //   return false;
   // }
@@ -407,6 +726,7 @@ bool DropOffController::HasWork() {
 }
 
 bool DropOffController::IsChangingMode() {
+  cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> isPrecisionDriving" << endl;
   return isPrecisionDriving;
 }
 

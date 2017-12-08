@@ -32,24 +32,49 @@ public:
   void SetCurrentTimeInMilliSecs( long int time );
 
 private:
+  // NEW VARS
+  void ChangeToPrecision();
+  void PrecisionRotate(float turnRate);
+  void PrecisionDrive(float driveRate);
+  void DropTarget();
+  void DriveToCenter();
+  bool isLost = false;
+  bool center_seen = false;
+  bool shouldCenter = false;
+  bool shouldDrop = false;
+  int lastCountRight = 0;
+  int lastCountLeft = 0;
+  long int timestamp;
+
+  const float dRate = 0.3;
+  const float tRate = 0.3;
+  // END NEW VARS
+
+
   // Begin George Values
+  bool goingHome = false;
   bool seenNest = false;
   bool isCentered = false;
+  bool first_time = true;
+  bool driveForward = false;
   int nestTimer = -1;
   int searchTimer = -1;
   int centeringTimer = -1;
 
   const int countThreshold = 3;
-  const int nestTagThreshold = 5;
+  const int nestTagThreshold = 3;
   const int nestWalkThreshold = 15;
   const int searchThreshold = 70;
   const int centeringThreshold = 6;
   const float nestVelocity = 0.7;
 
+
+
   bool IfShouldGoHome();
   bool IsLost();
   bool IsCentered();
   bool SeenNest();
+  bool firstSet = true;
 
   void SignalDoneDroppingOff();
   void FlushController();
