@@ -298,6 +298,7 @@ Result DropOffController::DoWork()
   
   if (finalInterrupt)
   { 
+    cout << "Resetting dropoff" << endl;
     result.type = behavior;
     result.b = prevProcess;
     result.reset = true;
@@ -320,6 +321,7 @@ Result DropOffController::DoWork()
     // Stop driving after x amt of seconds
     if (timerTimeElapsed > 4.5)
     {
+      cout << "Stopping drop off procedure" << endl;
       PrecisionDrive(0);
       finalInterrupt = true;
     }
@@ -327,6 +329,7 @@ Result DropOffController::DoWork()
     // Otherwise keep driving
     else
     {
+      cout << "Backing up" << endl;
       PrecisionDrive(-0.3);
     }
 
@@ -341,6 +344,7 @@ Result DropOffController::DoWork()
       return result;
     }
 
+    cout << "Dropping cube" << endl;
 
     DropTarget();
     shouldLeave = true;
@@ -360,7 +364,8 @@ Result DropOffController::DoWork()
     }
     
     // Update timer each time that we are in drive forward
-    if(timerTimeElapsed > -1) {
+    if(timerTimeElapsed > -1)
+    {
       long int elapsed = current_time - timestamp;
       timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
     }
@@ -368,6 +373,7 @@ Result DropOffController::DoWork()
     // Stop driving after x amt of seconds
     if (timerTimeElapsed > 3.5)
     {
+      cout << "Not driving forward" << endl;
       PrecisionDrive(0);
       shouldDrop = true;
     }
@@ -375,6 +381,7 @@ Result DropOffController::DoWork()
     // Otherwise keep driving
     else
     {
+      cout << "Driving forward" << endl;
       PrecisionDrive(0.15);
     }
     
@@ -392,99 +399,128 @@ Result DropOffController::DoWork()
     // If we see enough tags, center the robot
     if(count > nestTagThreshold)
     {
-      // Check to see if we may have turned too far from a previous iteration
-      if (count == 0 && (lastCountRight + lastCountLeft > 0))
-      {
-        isPrecisionDriving = true;
-        result.type = precisionDriving;
+        int tagDiff = 3;
 
-        // If we turned too much to the right, turn left instead
-        if(lastCountRight > lastCountLeft)
+        // If too many on left, turn right
+        if (countLeft - countRight >= tagDiff)
         {
-          result.pd.cmdVel = -0.15;
-          result.pd.cmdAngularError = tRate;
+            // turn right
+            cout << "turning right" << endl;
+            PrecisionRotate(0.15);
+            checkingIfCentered = false;
         }
 
-        // If we turned too much to the left, turn right instead
-        else if (lastCountLeft > lastCountRight)
+        // If too many on right, turn left
+        else if (countRight - countLeft >= tagDiff)
         {
-          result.pd.cmdVel = -0.15;
-          result.pd.cmdAngularError = -tRate; 
+            // turn left
+            cout << "turning left" << endl;
+            PrecisionRotate(-0.15);
+            checkingIfCentered = false;
         }
 
-        // Shouldn't get here, but in case drive backwards
+        // Otherwise stay put
         else
         {
-          PrecisionDrive(-dRate);
-        }
+            if(!checkingIfCentered)
+            {
+                cout << "checking if centered" << endl;
+                checkingIfCentered = true;
+
+                timerTimeElapsed = 0;
+                timestamp = current_time;
+            }
+
+            // Update timer each time that we are waiting to check tags
+            if(timerTimeElapsed > -1)
+            {
+              long int elapsed = current_time - timestamp;
+              timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
+            }
+
+            if(timerTimeElapsed > 2)
+            {
+              cout << "equal tags" << endl;
+              PrecisionDrive(0);
+              driveForward = true;
+              timerTimeElapsed = 0;
+              timestamp = current_time;
+            }
+            else
+            {
+              cout << "waiting" << endl;
+              PrecisionDrive(0);             }
+            }
+
+        // Keep track of how many tags we saw
+        lastCountRight = countRight;
+        lastCountLeft = countLeft;
+
         return result;
-      }
-
-      int tagDiff = 3;
-
-      // If too many on left, turn right
-      if (countLeft - countRight >= tagDiff) 
-      {
-        // turn right
-        //cout << "turning right" << endl;
-        PrecisionRotate(0.15);
-      }
-
-      // If too many on right, turn left
-      else if (countRight - countLeft >= tagDiff)
-      {
-        // turn left
-        //cout << "turning left" << endl;
-        PrecisionRotate(-0.15);
-      }
-
-      // Otherwise stay put
-      else
-      {
-        //cout << "equal tags" << endl;
-        PrecisionDrive(0);
-        driveForward = true;
-        timerTimeElapsed = 0;
-        timestamp = current_time;
-      }
-
-      // Keep track of how many tags we saw
-      lastCountRight = countRight;
-      lastCountLeft = countLeft;
-
-      return result;
     }
     else
     {
-      if (countLeft >= countRight) 
-      {
-        // turn right slowly
-        //cout << "turning right slowly" << endl;
+        checkingIfCentered = false;
 
-        result.pd.cmdVel = 0.15;
-        result.pd.cmdAngularError = -0.15;
-      }
+        // Check to see if we may have turned too far from a previous iteration
+        if (count == 0 && (lastCountRight + lastCountLeft > 0))
+        {
+            isPrecisionDriving = true;
+            result.type = precisionDriving;
 
-      // If too many on right, turn left
-      else if (countRight >= countLeft)
-      {
-        // turn left slowly
-        cout << "turning left slowly" << endl;
+            // If we turned too much to the right, turn left instead
+            if(lastCountRight > lastCountLeft)
+            {
+                cout << "Lost center, rotating back left" << endl;
+                result.pd.cmdVel = -0.15;
+                result.pd.cmdAngularError = tRate;
+            }
 
-        result.pd.cmdVel = 0.15;
-        result.pd.cmdAngularError = 0.15;
+            // If we turned too much to the left, turn right instead
+            else if (lastCountLeft > lastCountRight)
+            {
+                cout << "Lost center, rotating back right" << endl;
+                result.pd.cmdVel = 0.15;
+                result.pd.cmdAngularError = -tRate;
+            }
 
-      }
-      else
-      {
-        PrecisionDrive(0.15);
-      }
+            // Shouldn't get here, but in case drive backwards
+            else
+            {
+                cout << "backing up trying to center" << endl;
+                PrecisionDrive(-dRate);
+            }
+            return result;
+        }
 
+        else if (countLeft >= countRight)
+        {
+            // turn right slowly
+            cout << "turning right slowly" << endl;
+
+            result.pd.cmdVel = 0.15;
+            result.pd.cmdAngularError = -0.15;
+        }
+
+        // If too many on right, turn left
+        else if (countRight >= countLeft)
+        {
+            // turn left slowly
+            cout << "turning left slowly" << endl;
+
+            result.pd.cmdVel = 0.15;
+            result.pd.cmdAngularError = 0.15;
+
+        }
+        else
+        {
+            PrecisionDrive(0.15);
+        }
     }
   }
   else if (center_seen) 
   {
-    //cout << "center_seen && count > nestTagThreshold" << endl;
+    cout << "center_seen && count" << endl;
     shouldCenter = true;
     PrecisionDrive(0);
     return result; 
@@ -492,20 +528,20 @@ Result DropOffController::DoWork()
 
   else if (isLost)
   {
-    //cout << "isLost" << endl;
+    cout << "isLost" << endl;
     SearchForCenter();
     return result;   
   }
   else if (distanceToCenter <= collectionPointVisualDistance)
   {
-    //cout << "close enough to center. Still lost" << endl;
+    cout << "close enough to center. Still lost" << endl;
     isLost = true;
     SearchForCenter();
     return result;
   }
   else 
   {
-    //cout << "drive back home" << endl;
+    cout << "drive back home" << endl;
     DriveToCenter();
     return result;
   }
@@ -515,6 +551,7 @@ Result DropOffController::DoWork()
 
 void DropOffController::Reset() {
   isLost = false;
+  checkingIfCentered = false;
   center_seen = false;
   shouldCenter = false;
   shouldDrop = false;
@@ -565,19 +602,25 @@ void DropOffController::Reset() {
 
 }
 
-void DropOffController::SetTargetData(vector<Tag> tags) {
+void DropOffController::SetTargetData(vector<Tag> tags)
+{
   countRight = 0;
   countLeft = 0;
 
   center_seen = false;
+  int tagsFacingCenter = 0;
 
-  if(targetHeld) {
+  if(targetHeld)
+  {
     // if a target is detected and we are looking for center tags
-    if (tags.size() > 0 && !reachedCollectionPoint) {
-
+    if (tags.size() > 0 && !reachedCollectionPoint)
+    {
       // this loop is to get the number of center tags
-      for (int i = 0; i < tags.size(); i++) {
-        if (tags[i].getID() == 256) {
+      for (int i = 0; i < tags.size(); i++)
+      {
+
+        if (tags[i].getID() == 256)
+        {
 
           // checks if tag is on the right or left side of the image
           if (tags[i].getPositionX() + cameraOffsetCorrection > 0) {
@@ -586,15 +629,26 @@ void DropOffController::SetTargetData(vector<Tag> tags) {
           } else {
             countLeft++;
           }
+
           center_seen = true;
+
+          if( tags[i].calcYaw() < 0 && driveForward)
+          {
+            tagsFacingCenter++;
+          }
         }
       }
-    }
 
-    // if (countLeft + countRight > nestTagThreshold)
-    // {
-    //   SetSeenNest(true);
-    // }
+      int threshhold = 8;
+
+      if(tagsFacingCenter >= threshhold && driveForward)
+      {
+        //IN CENTER
+        cout << "In Center, dropping now" << endl;
+        shouldDrop = true;
+        return;
+      }
+    }
   }
 
 }
@@ -635,20 +689,11 @@ bool DropOffController::HasWork() {
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
 
-  // if (goingHome)
-  // {
-  //   return true;
-  // }
-  // if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving) {
-  //   return false;
-  // }
-
-
   return ((startWaypoint || isPrecisionDriving));
 }
 
 bool DropOffController::IsChangingMode() {
-  cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> isPrecisionDriving" << endl;
+  //cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> isPrecisionDriving" << endl;
   return isPrecisionDriving;
 }
 
