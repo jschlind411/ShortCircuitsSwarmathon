@@ -92,7 +92,7 @@ void PickUpController::SetTagData(vector<Tag> tags)
 
     blockYawError = atan((tags[target].getPositionX() + cameraOffsetCorrection)/blockDistance)*1.05; //angle to block from bottom center of chassis on the horizontal.
 
-    cout << "blockYawError TAGDATA:  " << blockYawError << endl;
+    //cout << "blockYawError TAGDATA:  " << blockYawError << endl;
 
   }
 

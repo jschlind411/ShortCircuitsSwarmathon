@@ -56,7 +56,7 @@ private:
   // Begin George Values
   bool goingHome = false;
   bool seenNest = false;
-  bool isCentered = false;
+  bool checkingIfCentered = false;
   bool first_time = true;
   int nestTimer = -1;
   int searchTimer = -1;
@@ -69,7 +69,7 @@ private:
   const int centeringThreshold = 6;
   const float nestVelocity = 0.7;
 
-
+  bool isCentered = false;
 
   bool IfShouldGoHome();
   bool IsLost();

@@ -116,6 +116,7 @@ Result result;
 std_msgs::String msg;
 
 bool sees_center = false;   //used to determine if it sees center
+int num_center_tags = 0;
 
 geometry_msgs::Twist velocity;
 char host[128];
@@ -430,6 +431,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 {
   
   sees_center = false;
+  num_center_tags = 0;
 
   if (message->detections.size() > 0)
   {
@@ -457,6 +459,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
       if(loc.getID() == 256)
       {
         sees_center = true;
+        num_center_tags++;
       }
     }
     
@@ -615,7 +618,7 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message)
 void publishStatusTimerEventHandler(const ros::TimerEvent&)
 {
   std_msgs::String msg;
-  msg.data = "online";
+  msg.data = "" + publishedName + " is alive!";
   status_publisher.publish(msg);
 }
 
@@ -665,7 +668,9 @@ Point updateCenterLocation()
 
   //cout << "IN UPDATECENTERLOCATION " << endl;
 
-  if(sees_center)
+  int threshhold = 5;
+
+  if(sees_center && num_center_tags >= threshhold)
   {
     //Center in front of rover, update position
     centerLocationOdom.x = currentLocation.x + (1.3 * cos(currentLocation.theta));
