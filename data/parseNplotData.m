@@ -14,7 +14,7 @@ mean_three_random_base_data = floor(mean(three_random_data(:,3)));
 mean_three_random_SC_data = floor(mean(three_random_data(:,2)));
 
 %Label for one robot bar graph
-one_c = categorical({'Cluster Base','Cluster SC'});
+one_c = categorical({'ClusterBase','ClusterRGFPA'});
 one_cluster_mean = [mean_one_cluster_base_data mean_one_cluster_SC_data];
 
 %Figure 1
@@ -24,11 +24,11 @@ ylim([0 5]);
 hold on;
 title('One Simulated Robot');
 xlabel('Resource Distribution');
-ylabel('Average cubes collected within 15 mins')
+ylabel('Average collected within 15 mins')
 hold off;
 
 %Label for three robots bar graph
-three_c = categorical({'ClusterBase', 'ClusterSC', 'RandomBase', 'RandomSC'})
+three_c = categorical({'ClusterBase', 'ClusterRGFPA', 'RandomBase', 'RandomRGFPA'})
 three_robot_mean = [mean_three_cluster_base_data mean_three_cluster_SC_data mean_three_random_base_data mean_three_random_SC_data];
 
 %Figure 2
@@ -38,7 +38,7 @@ ylim([0 20])
 hold on;
 title('Three Simulated Robots')
 xlabel('Resource Distribution')
-ylabel('Average cubes collected within 15 mins')
+ylabel('Average collected within 15 mins')
 hold off;
 
 % %Subplots
