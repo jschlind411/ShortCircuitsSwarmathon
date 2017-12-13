@@ -472,16 +472,16 @@ Result DropOffController::DoWork()
             if(lastCountRight > lastCountLeft)
             {
                 cout << "Lost center, rotating back left" << endl;
-                result.pd.cmdVel = -0.15;
-                result.pd.cmdAngularError = tRate;
+                result.pd.cmdVel = 0.15;
+                result.pd.cmdAngularError = -.15;
             }
 
             // If we turned too much to the left, turn right instead
             else if (lastCountLeft > lastCountRight)
             {
                 cout << "Lost center, rotating back right" << endl;
-                result.pd.cmdVel = 0.15;
-                result.pd.cmdAngularError = -tRate;
+                result.pd.cmdVel = -0.15;
+                result.pd.cmdAngularError = -.15;
             }
 
             // Shouldn't get here, but in case drive backwards
@@ -500,6 +500,8 @@ Result DropOffController::DoWork()
 
             result.pd.cmdVel = 0.15;
             result.pd.cmdAngularError = -0.15;
+
+            return result;
         }
 
         // If too many on right, turn left
@@ -511,10 +513,13 @@ Result DropOffController::DoWork()
             result.pd.cmdVel = 0.15;
             result.pd.cmdAngularError = 0.15;
 
+            return result;
+
         }
         else
         {
             PrecisionDrive(0.15);
+            return result;
         }
     }
   }
@@ -549,7 +554,8 @@ Result DropOffController::DoWork()
   return result;
 }
 
-void DropOffController::Reset() {
+void DropOffController::Reset()
+{
   isLost = false;
   checkingIfCentered = false;
   center_seen = false;

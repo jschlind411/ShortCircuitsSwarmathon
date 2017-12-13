@@ -85,7 +85,6 @@ void ObstacleController::avoidCollectionZone()
     result.pd.cmdVel = -0.2;
     result.pd.setPointYaw = 0;
     center_was_seen = true;
-
 }
 
 
@@ -212,7 +211,7 @@ void ObstacleController::ProcessData()
   }
 
 
-  if (collection_zone_seen || phys)
+  if ((collection_zone_seen && !targetHeld) || phys)
   {
     obstacleDetected = true;
     obstacleAvoided = false;

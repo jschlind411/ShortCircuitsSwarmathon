@@ -231,7 +231,7 @@ Point SearchController::ChooseRandomPoint()
   while(!isValid)
   {
     //ARENA IS 50x50
-    const double MAX_ARENA_SIZE = 3.5;
+    const double MAX_ARENA_SIZE = 3;
     const int MIN_SEARCH_DIST = 1;
 
     float searchDist = rng->uniformReal(MIN_SEARCH_DIST, MAX_ARENA_SIZE);
