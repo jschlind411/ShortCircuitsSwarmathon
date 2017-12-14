@@ -36,7 +36,7 @@ private:
   //switching to another block that is in view. In other words, the robot focuses on one particular target so
   //it doesn't get confused by having a whole bunch of targets in its view.
   bool lockTarget;
-
+  bool recently_saw_center = false;
   bool targetFound;
   bool targetHeld;
 
@@ -66,6 +66,8 @@ private:
 
   //current ROS time from the RosAdapter
   long int current_time;
+  long int timerTime;
+  long int timeStamp;
 
   //has a controller interupt occurred; this is a guard to prevent this controller from generating multiple interrupts
   //before doing its work

@@ -260,6 +260,14 @@ bool LogicController::HasWork()
 void LogicController::controllerInterconnect() 
 {
 
+  if(processState == PROCCESS_STATE_DROP_OFF)
+  {
+    if(obstacleController.getObstacleDetected())
+    {
+      dropOffController.WasInterrupted();
+    }
+  }
+
   if (processState == PROCCESS_STATE_SEARCHING) 
   {
 

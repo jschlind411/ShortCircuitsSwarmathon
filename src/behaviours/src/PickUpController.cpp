@@ -24,6 +24,21 @@ PickUpController::~PickUpController() { /*Destructor*/  }
 
 void PickUpController::SetTagData(vector<Tag> tags)
 {
+  if(recently_saw_center)
+  {
+    if(timerTime > -1)
+    {
+      long int elapsed = current_time - timeStamp;
+      timerTime = elapsed/1e3; // Convert from milliseconds to seconds
+    }
+
+    if(timerTime > 5)
+    {
+      recently_saw_center = false;
+      timerTime = 0;
+      timeStamp = 0;
+    }
+  }
 
   if (tags.size() > 0)
   {
@@ -35,6 +50,7 @@ void PickUpController::SetTagData(vector<Tag> tags)
 
     double closest = std::numeric_limits<double>::max();
     int target  = 0;
+
 
     //this loop selects the closest visible block to makes goals for it
     for (int i = 0; i < tags.size(); i++)
@@ -50,13 +66,17 @@ void PickUpController::SetTagData(vector<Tag> tags)
           release_control = true;
         }
 
+        timerTime = 0;
+        recently_saw_center = true;
+        timeStamp = current_time;
+        targetFound = false;
+
         return;
       }
 
       else
       {
-
-        if(tags[i].getID() == 0)
+        if(tags[i].getID() == 0 && !recently_saw_center)
         {
           targetFound = true;
 

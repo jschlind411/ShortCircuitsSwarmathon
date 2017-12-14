@@ -24,6 +24,7 @@ public:
   void SetBlockBlockingUltrasound(bool blockBlock);
   void SetTargetData(vector<Tag> tags);
   bool HasTarget() {return targetHeld;}
+  void WasInterrupted();
 
   float GetSpinner() {return spinner;}
 

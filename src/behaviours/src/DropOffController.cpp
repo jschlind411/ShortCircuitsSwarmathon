@@ -251,7 +251,7 @@ void DropOffController::DriveToCenter()
   if (isPrecisionDriving)
   {
     result.type = behavior;
-    result.b = prevProcess;
+    result.b = nextProcess;
     result.reset = false;
   }
 
@@ -371,7 +371,7 @@ Result DropOffController::DoWork()
     }
 
     // Stop driving after x amt of seconds
-    if (timerTimeElapsed > 3.5)
+    if (timerTimeElapsed > 4.5)
     {
       cout << "Not driving forward" << endl;
       PrecisionDrive(0);
@@ -399,7 +399,7 @@ Result DropOffController::DoWork()
     // If we see enough tags, center the robot
     if(count > nestTagThreshold)
     {
-        int tagDiff = 3;
+        int tagDiff = 5;
 
         // If too many on left, turn right
         if (countLeft - countRight >= tagDiff)
@@ -438,7 +438,7 @@ Result DropOffController::DoWork()
               timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
             }
 
-            if(timerTimeElapsed > 2)
+            if(timerTimeElapsed > 1)
             {
               cout << "equal tags" << endl;
               PrecisionDrive(0);
@@ -521,6 +521,7 @@ Result DropOffController::DoWork()
   else if (center_seen) 
   {
     cout << "center_seen && count" << endl;
+    result.b = nextProcess;
     shouldCenter = true;
     PrecisionDrive(0);
     return result; 
@@ -547,6 +548,27 @@ Result DropOffController::DoWork()
   }
 
   return result;
+}
+
+void DropOffController::WasInterrupted()
+{
+  isLost = false;
+  checkingIfCentered = false;
+  center_seen = false;
+  shouldCenter = false;
+  shouldDrop = false;
+  shouldLeave = false;
+  lastCountRight = 0;
+  lastCountLeft = 0;
+  timestamp = 0;
+  driveForward = false;
+
+  // George Begin
+  seenNest = false;
+  isCentered = false;
+  goingHome = false;
+  firstSet = true;
+  first_time = true;
 }
 
 void DropOffController::Reset() {
