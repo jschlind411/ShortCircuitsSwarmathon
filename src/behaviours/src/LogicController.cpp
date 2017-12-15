@@ -266,7 +266,7 @@ void LogicController::controllerInterconnect()
     //obstacle needs to know if the center ultrasound should be ignored
     if(pickUpController.GetIgnoreCenter()) 
     {
-      obstacleController.setIgnoreCenterSonar();
+      //obstacleController.setIgnoreCenterSonar();
     }
 
     //pickup controller annouces it has pickedup a target
