@@ -618,7 +618,7 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message)
 void publishStatusTimerEventHandler(const ros::TimerEvent&)
 {
   std_msgs::String msg;
-  msg.data = "" + publishedName + " is alive!";
+  msg.data = "" + publishedName + "ShortCircuits";
   status_publisher.publish(msg);
 }
 
